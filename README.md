@@ -1,1 +1,0 @@
-# Sherozabdulghaffar.github.io
