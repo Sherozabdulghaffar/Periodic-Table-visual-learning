@@ -1,6 +1,6 @@
 {
   "maintenance": {
-    "enabled": true,
+    "enabled": false,
     "message": "We’re doing maintenance right now. Please check back soon."
   },
   "blocked": {
@@ -9,6 +9,6 @@
   },
   "features": {
     "emailCertificate": true,
-    "adminButton": false
+    "adminButton": true
   }
 }
