@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Chemistry Game: Periodic Puzzle</title>
+	<link rel="stylesheet" href="./style.css">
+	<link rel="icon" type="image/svg+xml" href="./logo.svg">
+	<link rel="icon" type="image/png" href="./logo.png">
+	<link rel="apple-touch-icon" href="./logo.png">
+
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-B5GXGY2XYY"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+		gtag('config', 'G-B5GXGY2XYY');
+	</script>
+
+	<style>
+		/* High protection: disable text selection & right-click while allowing form inputs */
+		html, body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+		input, textarea, select, button { -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; }
+	</style>
+</head>
+<body class="page-game">
+	<main id="game" class="site-main" aria-label="Game">
+		<div class="game-container">
+			<div class="game-header">
+				<div class="header-left">
+					<h1 class="game-title">Periodic Puzzle 🧪🧩👩‍🔬</h1>
+					<div class="stats-container">
+						<div id="score-display" class="score-display"></div>
+						<div id="level-display" class="level-display"></div>
+						<div id="timer-display" class="timer-display"></div>
+					</div>
+				</div>
+				<div class="header-right">
+					<button id="reset-button" class="button" type="button">Start</button>
+					<button id="how-it-works-btn" class="button" type="button">How it works</button>
+					<button id="pause-button" class="button" type="button">Pause</button>
+					<button id="shuffle-button" class="button" type="button">Shuffle</button>
+					<button id="share-button" class="button" type="button">Share</button>
+					<button id="cert-button" class="button" type="button">Certificate</button>
+					<button id="verify-button" class="button" type="button">Verify Certificate</button>
+				</div>
+			</div>
+
+			<div id="elements-pool" class="elements-container" role="list" aria-label="Available element tiles">
+				<!-- Elements will be generated here by JavaScript -->
+			</div>
+
+			<div class="legend">
+				<div class="legend-item"><span class="color-box alkali-metal"></span>Alkali Metals</div>
+				<div class="legend-item"><span class="color-box alkaline-earth"></span>Alkaline Earth Metals</div>
+				<div class="legend-item"><span class="color-box transition"></span>Transition Metals</div>
+				<div class="legend-item"><span class="color-box post-transition"></span>Post-Transition Metals</div>
+				<div class="legend-item"><span class="color-box metalloid"></span>Metalloids</div>
+				<div class="legend-item"><span class="color-box nonmetal"></span>Nonmetals</div>
+				<div class="legend-item"><span class="color-box noble-gas"></span>Noble Gases</div>
+				<div class="legend-item"><span class="color-box lanthanide"></span>Lanthanides</div>
+				<div class="legend-item"><span class="color-box actinide"></span>Actinides</div>
+			</div>
+
+			<div class="periodic-table-container">
+				<div id="periodic-grid" class="periodic-grid" role="grid" aria-label="Periodic table drop zones">
+					<!-- Drop zones will be generated here by JavaScript -->
+				</div>
+				<!-- Sub-periodic grid will be appended here by JavaScript -->
+			</div>
+		</div>
+	</main>
+
+	<footer class="site-footer" aria-label="Ownership">© 2026 Shahroz</footer>
+
+	<!-- Welcome modal (for first-time player name) -->
+	<div id="welcome-modal" class="modal-overlay" style="display:none;">
+		<div class="modal-box">
+			<h2>🎮 Welcome to Periodic Puzzle!</h2>
+			<p class="modal-note" id="welcome-note-text">Enter your name to start your journey mastering the periodic table.</p>
+			<input id="welcome-name-input" class="modal-input" placeholder="Your name" maxlength="50" />
+			
+			<div class="difficulty-selector">
+				<p class="modal-note" style="margin-bottom: 10px;">Choose Difficulty Level:</p>
+				<div class="difficulty-options">
+					<button class="difficulty-btn" data-difficulty="easy">
+						<span class="difficulty-emoji">🟢</span>
+						<span class="difficulty-label">Easy</span>
+						<span class="difficulty-time">+5 min</span>
+					</button>
+					<button class="difficulty-btn active" data-difficulty="medium">
+						<span class="difficulty-emoji">🟡</span>
+						<span class="difficulty-label">Medium</span>
+						<span class="difficulty-time">Normal</span>
+					</button>
+					<button class="difficulty-btn" data-difficulty="hard">
+						<span class="difficulty-emoji">🔴</span>
+						<span class="difficulty-label">Hard</span>
+						<span class="difficulty-time">-5 min</span>
+					</button>
+				</div>
+			</div>
+			
+			<div class="modal-actions">
+				<button id="welcome-start-btn" class="celebration-button">Start Game</button>
+			</div>
+			<div id="welcome-status" class="modal-status" aria-live="polite"></div>
+		</div>
+	</div>
+
+	<!-- Certificate modal (hidden until used) -->
+	<div id="certificate-modal" class="celebration-overlay" style="display:none;">
+		<div class="celebration-message certificate-box">
+			<h2>Certificate Preview</h2>
+			<canvas id="certificate-canvas" width="1200" height="800"></canvas>
+			<div class="modal-actions">
+				<a id="download-cert" class="celebration-button" download="periodic-puzzle-certificate.png">Download</a>
+				<button id="close-cert" class="celebration-button">Close</button>
+			</div>
+			<div id="cert-code" style="color:#64ffda;margin-top:6px;font-weight:bold;"></div>
+		</div>
+	</div>
+
+	<!-- In-page Modals: Share, Certificate Input, Verify, Info -->
+	<div id="share-modal" class="modal-overlay" style="display:none;">
+		<div class="modal-box">
+			<h2>Share your score</h2>
+			<textarea id="share-text" class="modal-textarea" readonly></textarea>
+			<div class="modal-actions">
+				<button id="share-copy-btn" class="celebration-button">Copy</button>
+				<button id="share-native-btn" class="celebration-button">Share</button>
+				<button id="share-email-btn" class="celebration-button">Email</button>
+				<button id="share-close-btn" class="celebration-button">Close</button>
+			</div>
+			<div id="share-status" class="modal-status" aria-live="polite"></div>
+		</div>
+	</div>
+
+	<div id="verify-modal" class="modal-overlay" style="display:none;">
+		<div class="modal-box">
+			<h2>Verify Certificate</h2>
+			<p class="modal-note">Choose verification method:</p>
+			<div class="modal-actions" style="margin-bottom: 20px;">
+				<button id="verify-scan-btn" class="celebration-button">Scan QR Code</button>
+				<button id="verify-manual-btn" class="celebration-button">Enter Code Manually</button>
+			</div>
+			<div id="verify-scan-area" style="display:none;">
+				<p class="modal-note">Use your camera to scan the QR code on the certificate:</p>
+				<video id="qr-video" style="width:100%; max-width:400px; border-radius:8px; margin:10px 0;"></video>
+				<canvas id="qr-canvas" style="display:none;"></canvas>
+				<button id="stop-scan-btn" class="celebration-button">Stop Scanning</button>
+			</div>
+			<div id="verify-manual-area" style="display:none;">
+				<p class="modal-note">Enter the certificate code:</p>
+				<input id="verify-code-input" class="modal-input" placeholder="8-character code" maxlength="8" />
+				<div class="modal-actions">
+					<button id="verify-submit-btn" class="celebration-button">Verify</button>
+					<button id="verify-back-btn" class="celebration-button">Back</button>
+				</div>
+			</div>
+			<div id="verify-result" class="modal-status" aria-live="polite"></div>
+			<button id="verify-close-btn" class="celebration-button" style="margin-top:10px;">Close</button>
+		</div>
+	</div>
+
+	<div id="cert-input-modal" class="modal-overlay" style="display:none;">
+		<div class="modal-box">
+			<h2>Claim Certificate</h2>
+			<p id="cert-input-note" class="modal-note">Enter your name to generate a certificate.</p>
+			<input id="cert-name-input" class="modal-input" placeholder="Your name" />
+			<div class="modal-actions">
+				<button id="cert-generate-btn" class="celebration-button">Generate</button>
+				<button id="cert-cancel-btn" class="celebration-button">Cancel</button>
+			</div>
+			<div id="cert-input-status" class="modal-status" aria-live="polite"></div>
+		</div>
+	</div>
+
+	<div id="verify-modal" class="modal-overlay" style="display:none;">
+		<div class="modal-box">
+			<h2>Verify Certificate</h2>
+			<input id="verify-code-input" class="modal-input" placeholder="Certificate code" />
+			<div class="modal-actions">
+				<button id="verify-submit-btn" class="celebration-button">Verify</button>
+				<button id="verify-close-btn" class="celebration-button">Close</button>
+			</div>
+			<div id="verify-result" class="modal-status" aria-live="polite"></div>
+		</div>
+	</div>
+
+	<!-- Email Certificate Modal -->
+	<div id="email-modal" class="modal-overlay" style="display:none;">
+		<div class="modal-box">
+			<h2>📧 Get Your Certificate</h2>
+			<p class="modal-note">Enter your email to receive your certificate.</p>
+			<input type="email" id="player-email" class="modal-input" placeholder="you@example.com" />
+			<div id="email-status" class="modal-status"></div>
+			<div class="modal-actions">
+				<button class="celebration-button" onclick="sendCertificateEmail()">Send</button>
+				<button class="celebration-button" onclick="closeEmailModal()">Close</button>
+			</div>
+		</div>
+	</div>
+
+	<div id="info-modal" class="modal-overlay" style="display:none;">
+		<div class="modal-box">
+			<h2>Info</h2>
+			<p id="info-message" class="modal-note"></p>
+			<div class="modal-actions">
+				<button id="info-close-btn" class="celebration-button">Close</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- How it works: quick interactive tutorial -->
+	<div id="howto-modal" class="modal-overlay" style="display:none;">
+		<div class="modal-box tutorial-box">
+			<h2>How it works</h2>
+			<p class="modal-note">Drag the tile into the matching slot. Try it once to complete the tutorial.</p>
+
+			<div class="tutorial-stage" aria-label="Tutorial drag area">
+				<div class="tutorial-target" id="tutorial-target" aria-label="Target slot">
+					<div class="tutorial-target-label">Slot</div>
+				</div>
+				<div class="tutorial-tile" id="tutorial-tile" role="button" tabindex="0" aria-label="Drag this tile">
+					<div class="tutorial-atomic">1</div>
+					<div class="tutorial-symbol">H</div>
+					<div class="tutorial-name">Hydrogen</div>
+				</div>
+				<div class="tutorial-pointer" id="tutorial-pointer" aria-hidden="true"></div>
+			</div>
+
+			<div id="tutorial-status" class="modal-status" aria-live="polite"></div>
+
+			<div class="modal-actions">
+				<button id="tutorial-skip-btn" class="celebration-button">Skip</button>
+				<button id="tutorial-close-btn" class="celebration-button">Close</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- EmailJS SDK -->
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+	<script type="text/javascript">
+		(function(){ emailjs.init("yNc2k0colkBeS_eTO"); })();
+	</script>
+	<!-- QR Code Library -->
+	<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+	<script src="./script.js"></script>
+</body>
+</html>
