@@ -1,7 +1,7 @@
 {
   "maintenance": {
     "enabled": true,
-    "message": "We’re doing maintenance right now. Please check back soon. Fuck you"
+    "message": "We’re doing maintenance right now. Please check back soon."
   },
   "blocked": {
     "emails": [],
