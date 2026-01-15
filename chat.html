@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ORION AI - Periodic Puzzle Assistant</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" type="image/svg+xml" href="./logo.svg">
+  <link rel="icon" type="image/png" href="./logo.png">
+  
+  <style>
+    .chat-container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .chat-header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .chat-header h1 {
+      font-size: 2.5em;
+      margin: 0 0 10px 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .chat-header p {
+      color: rgba(255, 255, 255, 0.7);
+      margin: 5px 0;
+    }
+    
+    .chat-messages {
+      height: 500px;
+      overflow-y: auto;
+      padding: 20px;
+      margin-bottom: 20px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .message {
+      padding: 15px 20px;
+      border-radius: 12px;
+      max-width: 80%;
+      word-wrap: break-word;
+      animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .message.user {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+    
+    .message.assistant {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      align-self: flex-start;
+      border-left: 3px solid #667eea;
+    }
+    
+    .message.system {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+      align-self: center;
+      text-align: center;
+      font-size: 0.9em;
+      max-width: 90%;
+    }
+    
+    .message.error {
+      background: rgba(244, 67, 54, 0.2);
+      color: #f44336;
+      align-self: center;
+      border-left: 3px solid #f44336;
+    }
+    
+    .chat-input-container {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .chat-input {
+      flex: 1;
+      padding: 15px 20px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    
+    .chat-input:focus {
+      outline: none;
+      border-color: #667eea;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .chat-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .send-btn {
+      padding: 15px 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .send-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .send-btn:active {
+      transform: translateY(0);
+    }
+    
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 15px 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      max-width: 80px;
+      align-self: flex-start;
+    }
+    
+    .typing-indicator.active {
+      display: flex;
+    }
+    
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: #667eea;
+      border-radius: 50%;
+      animation: typingDot 1.4s infinite;
+    }
+    
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    
+    @keyframes typingDot {
+      0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.7;
+      }
+      30% {
+        transform: translateY(-10px);
+        opacity: 1;
+      }
+    }
+    
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .back-link:hover {
+      color: #764ba2;
+      transform: translateX(-5px);
+    }
+    
+    /* Scrollbar styling */
+    .chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(102, 126, 234, 0.5);
+      border-radius: 10px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+      background: rgba(102, 126, 234, 0.7);
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <a href="./index.html" class="back-link">← Back to Home</a>
+    
+    <div class="chat-header">
+      <h1>ORION AI Assistant</h1>
+      <p>Periodic Puzzle by Shahroz</p>
+      <p style="font-size: 0.9em; opacity: 0.6;">Ask me about chemistry & the periodic table 🧪</p>
+    </div>
+    
+    <div class="chat-messages" id="chatMessages">
+      <div class="message system">
+        👋 Hi! I'm ORION from Periodic Puzzle by Shahroz. Ask me about elements, game tips, or chemistry questions! 🧪⚛️
+      </div>
+    </div>
+    
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+    
+    <div class="chat-input-container">
+      <input 
+        type="text" 
+        class="chat-input" 
+        id="chatInput" 
+        placeholder="Type your message..."
+        autocomplete="off"
+      />
+      <button class="send-btn" id="sendBtn">Send</button>
+    </div>
+  </div>
+  
+  <!-- API Configuration -->
+  <script src="./api-config.js"></script>
+  <script src="./chat.js"></script>
+</body>
+</html>
