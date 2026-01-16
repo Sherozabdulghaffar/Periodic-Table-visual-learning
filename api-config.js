@@ -5,8 +5,8 @@ const API_CONFIG = {
   // Local development
   local: 'http://localhost:8001',
   
-  // Production - PythonAnywhere backend
-  production: 'https://shahroz1423.pythonanywhere.com',
+  // Production - Netlify backend
+  production: 'https://fluffy-dasik-a7c150.netlify.app',
   
   // Auto-detect environment
   getBaseURL() {
