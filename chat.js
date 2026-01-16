@@ -46,7 +46,7 @@ async function sendMessage() {
   setTyping(true);
   
   try {
-    const apiURL = window.API_CONFIG ? window.API_CONFIG.getBaseURL() : '';
+   const apiURL = "https://shahroz1423.pythonanywhere.com";
     const response = await fetch(`${apiURL}/api/chat`, {
       method: 'POST',
       headers: {
@@ -97,3 +97,4 @@ chatInput.addEventListener('keypress', (e) => {
 
 // Focus input on load
 chatInput.focus();
+
