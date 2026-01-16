@@ -5,9 +5,8 @@ const API_CONFIG = {
   // Local development
   local: 'http://localhost:8001',
   
-  // Production - UPDATE THIS with your Render URL
-  // Example: 'https://your-app-name.onrender.com'
-  production: 'https://shahroz1423.pythonanywhere.com/',
+  // Production - PythonAnywhere backend
+  production: 'https://shahroz1423.pythonanywhere.com',
   
   // Auto-detect environment
   getBaseURL() {
