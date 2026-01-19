@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Primary SEO -->
+  <title>AI Chemistry Chat Assistant – Ask Chemistry Questions | Periodix</title>
+  <meta name="description" content="Ask chemistry questions and learn about elements, reactions, and periodic trends using the AI chemistry assistant by Periodix.">
+  <meta name="keywords" content="AI Chemistry Chat, Chemistry Assistant, Ask Chemistry, Periodic Table AI, Chemistry Help">
+  <meta name="author" content="Shahroz">
+
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://periodix.me/chat.html">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="AI Chemistry Chat Assistant – Periodix">
+  <meta property="og:description" content="Smart AI assistant for chemistry learning and periodic table help.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://periodix.me/chat.html">
+  <meta property="og:image" content="https://periodix.me/logo.png">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" type="image/svg+xml" href="./logo.svg">
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(900px 450px at 12% 35%, rgba(109, 40, 217, 0.40), transparent 60%),
+        radial-gradient(700px 380px at 78% 30%, rgba(37, 99, 235, 0.32), transparent 55%),
+        radial-gradient(520px 420px at 78% 82%, rgba(34, 197, 94, 0.22), transparent 55%),
+        linear-gradient(110deg, #0c1730, #0a1226 60%, #08101f);
+      color: #e8f0ff;
+      font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .chat-container {
+      max-width: 1100px;
+      margin: 48px auto;
+      padding: 26px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 20px;
+    }
+
+    .chat-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: 0 10px 30px rgba(124, 58, 237, 0.35);
+    }
+
+    .chat-header h1 {
+      margin: 0;
+      font-size: 1.9rem;
+      letter-spacing: -0.4px;
+    }
+
+    .chat-subtitle {
+      margin: 6px 0 0;
+      color: rgba(232, 240, 255, 0.72);
+      font-size: 0.95rem;
+    }
+
+    .status-pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(76, 175, 80, 0.14);
+      color: #9ef7b0;
+      font-weight: 600;
+      border: 1px solid rgba(76, 175, 80, 0.28);
+      box-shadow: inset 0 0 0 1px rgba(76, 175, 80, 0.12);
+    }
+
+    .chat-messages {
+      height: min(62vh, 640px);
+      overflow-y: auto;
+      padding: 18px;
+      margin-bottom: 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      padding: 14px 16px;
+      border-radius: 14px;
+      max-width: 78%;
+      word-wrap: break-word;
+      animation: fadeIn 0.28s ease;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      color: #fff;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .message.assistant {
+      background: rgba(255, 255, 255, 0.06);
+      color: #e8f0ff;
+      align-self: flex-start;
+      border-left: 3px solid #7c3aed;
+    }
+
+    .message.system {
+      background: rgba(255, 193, 7, 0.12);
+      color: #ffd666;
+      align-self: center;
+      text-align: center;
+      font-size: 0.92rem;
+      max-width: 90%;
+    }
+
+    .message.error {
+      background: rgba(244, 67, 54, 0.14);
+      color: #ff9f9f;
+      align-self: center;
+      border-left: 3px solid #f44336;
+    }
+
+    .chat-input-container {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      position: sticky;
+      bottom: 0;
+      padding: 10px 0 2px;
+      background: linear-gradient(180deg, rgba(8,16,31,0.0), rgba(8,16,31,0.6));
+      backdrop-filter: blur(6px);
+    }
+
+    .chat-input {
+      width: 100%;
+      padding: 16px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #e8f0ff;
+      font-size: 16px;
+      transition: all 0.25s ease;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .chat-input:focus {
+      outline: none;
+      border-color: #7c3aed;
+      background: rgba(255, 255, 255, 0.09);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
+    }
+
+    .chat-input::placeholder {
+      color: rgba(232, 240, 255, 0.55);
+    }
+
+    .send-btn {
+      padding: 15px 24px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #0b1b2f;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.1px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 12px 30px rgba(22, 163, 74, 0.35);
+    }
+
+    .send-btn:hover {
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: 0 16px 38px rgba(22, 163, 74, 0.42);
+    }
+
+    .send-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 10px 26px rgba(22, 163, 74, 0.30);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      max-width: 90px;
+      align-self: flex-start;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .typing-indicator.active {
+      display: flex;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: #7c3aed;
+      border-radius: 50%;
+      animation: typingDot 1.3s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.30s; }
+
+    @keyframes typingDot {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
+      30% { transform: translateY(-8px); opacity: 1; }
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 18px;
+      color: rgba(232, 240, 255, 0.75);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s ease;
+    }
+
+    .back-link:hover {
+      color: #9ef7b0;
+    }
+
+    @media (max-width: 720px) {
+      .chat-container { padding: 20px; margin: 28px 12px; }
+      .chat-header { flex-direction: column; align-items: flex-start; }
+      .chat-messages { height: 62vh; }
+      .message { max-width: 100%; }
+      .send-btn { width: 100%; }
+      .chat-input-container { grid-template-columns: 1fr; position: static; }
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .back-link:hover {
+      color: #764ba2;
+      transform: translateX(-5px);
+    }
+    
+    /* Scrollbar styling */
+    .chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(102, 126, 234, 0.5);
+      border-radius: 10px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+      background: rgba(102, 126, 234, 0.7);
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <a href="./index.html" class="back-link">← Back to Home</a>
+    
+    <div class="chat-header">
+      <h1>ORION AI Assistant</h1>
+      <p>Periodic Puzzle by Shahroz</p>
+      <p style="font-size: 0.9em; opacity: 0.6;">Ask me about chemistry & the periodic table 🧪</p>
+    </div>
+    
+    <div class="chat-messages" id="chatMessages">
+      <div class="message system">
+        👋 Hi! I'm ORION from Periodic Puzzle by Shahroz. Ask me about elements, game tips, or chemistry questions! 🧪⚛️
+      </div>
+    </div>
+    
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+    
+    <div class="chat-input-container">
+      <input 
+        type="text" 
+        class="chat-input" 
+        id="chatInput" 
+        placeholder="Type your message..."
+        autocomplete="off"
+      />
+      <button class="send-btn" id="sendBtn">Send</button>
+    </div>
+  </div>
+  
+  <!-- API Configuration -->
+  <script src="./api-config.js"></script>
+  <script src="./chat.js"></script>
+</body>
+</html>
