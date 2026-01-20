@@ -31,7 +31,6 @@
 		"@context": "https://schema.org",
 		"@type": "WebSite",
 		"name": "Periodix",
-		"alternateName": "Periodix Tech",
 		"url": "https://periodix.me"
 	}
 	</script>
@@ -66,17 +65,16 @@
   </style>
 </head>
 <body class="page-intro">
+	<div class="seo-header">
+		<h1 class="visually-hidden">Periodix – Interactive Periodic Table Game</h1>
+		<p class="visually-hidden">Periodix helps students learn chemistry through an interactive periodic table puzzle game.</p>
+	</div>
 	<header class="site-hero" aria-label="Intro">
 		<div class="hero-inner">
-						<!-- SEO header moved here for design harmony -->
-						<div class="seo-header">
-							<h1 class="visually-hidden">Periodix – Interactive Periodic Table Game</h1>
-							<p class="visually-hidden">Periodix helps students learn chemistry through an interactive periodic table puzzle game.</p>
-						</div>
 			<nav class="top-nav" aria-label="Primary">
 				<div class="brand">
 					<div class="brand-mark" aria-hidden="true"></div>
-					<div class="brand-text">Periodic Puzzle</div>
+					<div class="brand-text">Periodix <span class="brand-sub">Periodic Puzzle</span></div>
 					<span class="pill pill--status">Online</span>
 				</div>
 				<div class="nav-actions">
@@ -88,9 +86,18 @@
 
 			<div class="hero-grid">
 				<div class="hero-copy">
-					<p class="hero-kicker">Chemistry • Speed • Memory</p>
-					<h1 class="hero-title">A modern way to master the periodic table.</h1>
-					<p class="hero-subtitle">Drag elements into the correct slots, beat the timer, and claim your certificate when you finish.</p>
+					  <p class="hero-kicker">Chemistry • Speed • Memory</p>
+					  <h2 class="hero-title">A modern way to master the periodic table.</h2>
+					  <p class="hero-subtitle">Drag elements into the correct slots, beat the timer, and claim your certificate when you finish.</p>
+						<!-- SiteNavigationElement schema for Google brand clarity -->
+						<script type="application/ld+json">
+						{
+							"@context": "https://schema.org",
+							"@type": "SiteNavigationElement",
+							"name": "Periodix",
+							"url": "https://periodix.me/"
+						}
+						</script>
 					<div class="hero-ctas">
 						<a class="cta cta--primary" href="./periodic.html">Start playing</a>
 						<a class="cta cta--secondary" href="./periodic.html">Go to puzzle</a>
