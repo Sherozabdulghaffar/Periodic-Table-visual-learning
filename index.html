@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- Primary SEO -->
+	<title>Periodix – Tech News, Tools & Digital Insights</title>
+	<meta name="description" content="Periodix provides latest tech news, tools, tutorials, and digital insights to help you stay ahead.">
+	<meta name="keywords" content="tech news, digital tools, software, web development, cybersecurity, tutorials, insights, Periodix">
+	<meta name="author" content="Shahroz">
+
+	<!-- Google / Search -->
+	<meta name="robots" content="index, follow">
+	<link rel="canonical" href="https://periodix.me/">
+
+	<!-- Open Graph (Facebook, LinkedIn) -->
+	<meta property="og:title" content="Periodix – Interactive Periodic Table">
+	<meta property="og:description" content="Learn chemistry with an interactive periodic table and smart tools designed for students.">
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="https://periodix.me/">
+	<meta property="og:image" content="https://periodix.me/logo.png">
+
+	<!-- Twitter -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Periodix – Interactive Periodic Table">
+	<meta name="twitter:description" content="Explore chemical elements and learn chemistry interactively with Periodix.">
+	<meta name="twitter:image" content="https://periodix.me/logo.png">
+
+	<!-- Structured Data: WebSite -->
+	<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "WebSite",
+		"name": "Periodix",
+		"alternateName": "Periodix Tech",
+		"url": "https://periodix.me"
+	}
+	</script>
+	<!-- Structured Data: Organization Logo -->
+	<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "Organization",
+		"name": "Periodix",
+		"url": "https://periodix.me",
+		"logo": "https://periodix.me/logo.png"
+	}
+	</script>
+  <link rel="stylesheet" href="./style.css">
+	<link rel="icon" href="/favicon.ico" type="image/x-icon">
+	<link rel="icon" type="image/svg+xml" href="./logo.svg">
+	<link rel="icon" type="image/png" href="./logo.png">
+	<link rel="apple-touch-icon" href="./logo.png">
+  
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-B5GXGY2XYY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-B5GXGY2XYY');
+  </script>
+  
+  <style>
+    /* High protection: disable text selection & right-click while allowing form inputs */
+    html, body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+    input, textarea, select, button { -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; }
+  </style>
+</head>
+<body class="page-intro">
+	<header class="site-hero" aria-label="Intro">
+		<div class="hero-inner">
+						<!-- SEO header moved here for design harmony -->
+						<div class="seo-header">
+							<h1 class="visually-hidden">Periodix – Tech News & Digital Tools</h1>
+							<p class="visually-hidden">Periodix is a technology-focused platform covering software, web development, cybersecurity, and digital tools.</p>
+						</div>
+			<nav class="top-nav" aria-label="Primary">
+				<div class="brand">
+					<div class="brand-mark" aria-hidden="true"></div>
+					<div class="brand-text">Periodic Puzzle</div>
+					<span class="pill pill--status">Online</span>
+				</div>
+				<div class="nav-actions">
+					<a class="nav-link" href="./chat.html">ORION AI</a>
+					<a class="nav-link" href="./periodic.html">Play</a>
+					<a class="pill pill--cta" id="intro-start" href="./periodic.html">Start</a>
+				</div>
+			</nav>
+
+			<div class="hero-grid">
+				<div class="hero-copy">
+					<p class="hero-kicker">Chemistry • Speed • Memory</p>
+					<h1 class="hero-title">A modern way to master the periodic table.</h1>
+					<p class="hero-subtitle">Drag elements into the correct slots, beat the timer, and claim your certificate when you finish.</p>
+					<div class="hero-ctas">
+						<a class="cta cta--primary" href="./periodic.html">Start playing</a>
+						<a class="cta cta--secondary" href="./periodic.html">Go to puzzle</a>
+					</div>
+					<div class="intro-ownership" aria-label="Ownership">
+						<span class="intro-ownership__label">Created by</span>
+						<span class="intro-ownership__name">Shahroz</span>
+					</div>
+				</div>
+				<div class="hero-art" aria-hidden="true">
+					<div class="ring ring--1"></div>
+					<div class="ring ring--2"></div>
+					<div class="orb orb--1"></div>
+					<div class="orb orb--2"></div>
+					<div class="sticks">
+						<span class="stick stick--1"></span>
+						<span class="stick stick--2"></span>
+						<span class="stick stick--3"></span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<!-- Maintenance overlay (shown when site-config.json enables maintenance) -->
+	<div class="modal-overlay" id="introMaintenanceOverlay" style="display:none" aria-hidden="true">
+		<div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="introMaintenanceTitle">
+			<h2 id="introMaintenanceTitle">Maintenance Mode</h2>
+			<p id="introMaintenanceMessage" style="margin-top: 10px; line-height: 1.6;"></p>
+			<div style="margin-top: 14px; font-size: 0.95em; opacity: 0.9;">
+				The game is temporarily disabled.
+			</div>
+		</div>
+	</div>
+
+	<footer class="site-footer" aria-label="Ownership">© 2026 Shahroz</footer>
+
+	<script>
+		(async () => {
+			try {
+				const res = await fetch('./site-config.json', { cache: 'no-store' });
+				if (!res.ok) return;
+				const cfg = await res.json();
+				if (!cfg?.maintenance?.enabled) return;
+
+				const message = cfg?.maintenance?.message || 'We are doing a quick update. Please check back soon.';
+
+				const statusPill = document.querySelector('.pill--status');
+				if (statusPill) statusPill.textContent = 'Maintenance';
+
+				const overlay = document.getElementById('introMaintenanceOverlay');
+				const messageEl = document.getElementById('introMaintenanceMessage');
+				if (messageEl) messageEl.textContent = message;
+				if (overlay) {
+					overlay.style.display = 'flex';
+					overlay.setAttribute('aria-hidden', 'false');
+				}
+
+				// Disable navigation into the game while maintenance is enabled
+				document.querySelectorAll('a[href$="periodic.html"], a[href$="/periodic.html"]').forEach(a => {
+					a.addEventListener('click', (e) => e.preventDefault());
+					a.setAttribute('aria-disabled', 'true');
+					a.style.pointerEvents = 'none';
+					a.style.opacity = '0.65';
+				});
+			} catch {
+				// If config can't be loaded, do nothing
+			}
+		})();
+	</script>
+</body>
+</html>
