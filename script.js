@@ -1068,11 +1068,14 @@ const data = {
 
 // Define game state variables at the top
 let currentScore = 0;
+let totalAttempts = 0;
+let correctPlacements = 0;
 let currentLevel = 1;
 let gameDifficulty = 'medium'; // easy, medium, hard
 let isGamePaused = false;
 let isTimerExpired = false;
 let timeRemaining;
+let gameTotalSeconds; // total timer for the current game (difficulty-adjusted)
 let timerInterval;
 let isGameStarted = false;
 let isGameComplete = false;
@@ -1084,13 +1087,9 @@ const SITE_CONFIG_DEFAULT = {
 		message: "We’re doing maintenance right now. Please check back soon."
 	},
 	blocked: {
-		emails: [],
 		message: "This email is blocked."
 	},
-	features: {
-		emailCertificate: true,
-		adminButton: true
-	}
+	features: {}
 };
 
 let siteConfig = SITE_CONFIG_DEFAULT;
@@ -1108,19 +1107,6 @@ function loadSiteConfigOverrides() {
 	}
 }
 
-function saveSiteConfigOverrides(overrides) {
-	try {
-		localStorage.setItem(SITE_CONFIG_OVERRIDES_KEY, JSON.stringify(overrides || {}));
-		return true;
-	} catch (e) {
-		return false;
-	}
-}
-
-function clearSiteConfigOverrides() {
-	try { localStorage.removeItem(SITE_CONFIG_OVERRIDES_KEY); } catch (e) {}
-}
-
 function mergeSiteConfig(baseCfg, overrides) {
 	if (!overrides || typeof overrides !== 'object') return baseCfg;
 	return {
@@ -1129,24 +1115,10 @@ function mergeSiteConfig(baseCfg, overrides) {
 		maintenance: { ...(baseCfg?.maintenance || {}), ...(overrides?.maintenance || {}) },
 		blocked: {
 			...(baseCfg?.blocked || {}),
-			...(overrides?.blocked || {}),
-			emails: Array.isArray(overrides?.blocked?.emails)
-				? overrides.blocked.emails
-				: (baseCfg?.blocked?.emails || [])
+			...(overrides?.blocked || {})
 		},
 		features: { ...(baseCfg?.features || {}), ...(overrides?.features || {}) }
 	};
-}
-
-function normalizeEmail(value) {
-	return String(value || "").trim().toLowerCase();
-}
-
-function isEmailBlocked(email) {
-	const blockedList = siteConfig?.blocked?.emails || [];
-	const target = normalizeEmail(email);
-	if (!target) return false;
-	return blockedList.some((e) => normalizeEmail(e) === target);
 }
 
 function setButtonEnabled(id, enabled) {
@@ -1164,9 +1136,7 @@ function disableGameUI(message) {
 		"pause-button",
 		"shuffle-button",
 		"share-button",
-		"cert-button",
-		"verify-button",
-		"admin-button"
+		"results-button"
 	].forEach((id) => setButtonEnabled(id, false));
 
 	try {
@@ -1190,59 +1160,30 @@ async function safeFetchJson(url) {
 	}
 }
 
-function getRemoteSiteConfigUrlFromLocalCfg(localCfg) {
-	// Allows split hosting:
-	// - Public site on GitHub Pages
-	// - Admin/API on a separate origin (e.g. https://your-backend.example/api/site-config)
-	const url = localCfg?.remoteApi?.siteConfigUrl || localCfg?.remoteSiteConfigUrl;
-	if (!url) return null;
-	if (typeof url !== "string") return null;
-	const trimmed = url.trim();
-	if (!trimmed) return null;
-	return trimmed;
-}
-
 async function loadSiteConfig() {
 	try {
-		// Load local file first so static hosting can optionally point to a remote API.
+		// Fully client-side: read the local site-config.json and apply any
+		// per-device overrides stored in localStorage. No backend needed.
 		const localCfg = await safeFetchJson("./site-config.json");
-
-		// Prefer same-origin backend API if present (Mode B).
-		let cfg = await safeFetchJson("/api/site-config");
-
-		// For GitHub Pages (static-only), optionally fetch config from a separate backend origin.
-		if (!cfg) {
-			const remoteUrl = getRemoteSiteConfigUrlFromLocalCfg(localCfg);
-			if (remoteUrl) cfg = await safeFetchJson(remoteUrl);
-		}
-
-		// Fallback to local config if no backend config was fetched.
-		if (!cfg && localCfg) cfg = localCfg;
-		if (!cfg) return;
 
 		let merged = {
 			...SITE_CONFIG_DEFAULT,
 			...(localCfg || {}),
-			...cfg,
 			maintenance: {
 				...SITE_CONFIG_DEFAULT.maintenance,
-				...((localCfg && localCfg.maintenance) || {}),
-				...(cfg?.maintenance || {})
+				...((localCfg && localCfg.maintenance) || {})
 			},
 			blocked: {
 				...SITE_CONFIG_DEFAULT.blocked,
-				...((localCfg && localCfg.blocked) || {}),
-				...(cfg?.blocked || {})
+				...((localCfg && localCfg.blocked) || {})
 			},
 			features: {
 				...SITE_CONFIG_DEFAULT.features,
-				...((localCfg && localCfg.features) || {}),
-				...(cfg?.features || {})
+				...((localCfg && localCfg.features) || {})
 			}
 		};
 
 		// Apply per-device overrides (legacy; stored in localStorage)
-		// IMPORTANT: do not allow local overrides to disable a global maintenance state.
 		const globalMaintenanceEnabled = !!merged?.maintenance?.enabled;
 		const globalMaintenanceMessage = merged?.maintenance?.message;
 		merged = mergeSiteConfig(merged, loadSiteConfigOverrides());
@@ -1337,6 +1278,7 @@ function createElementBoxes() {
 		box.className = "element-box";
 		box.draggable = true;
 		box.dataset.number = element.number;
+		box.dataset.group = element.group;
 		box.innerHTML = `
             <div class="atomic-number">${element.number}</div>
             <div class="symbol">${element.symbol}</div>
@@ -1394,6 +1336,8 @@ function placeElementIfValid(zone, draggedEl, elementNumber) {
 	if (zone.hasChildNodes()) return false;
 
 	const position = parseInt(zone.dataset.position);
+	// A real placement attempt on an empty, non-spacer zone
+	totalAttempts++;
 	if (Number.isNaN(position) || elementNumber !== position) {
 		draggedEl.classList.add('shake');
 		setTimeout(() => draggedEl.classList.remove('shake'), 200);
@@ -1402,6 +1346,7 @@ function placeElementIfValid(zone, draggedEl, elementNumber) {
 
 	zone.appendChild(draggedEl);
 	zone.classList.add('correct');
+	correctPlacements++;
 	if (!isTimerExpired) {
 		currentScore += POINTS_PER_CORRECT;
 		updateScoreDisplay();
@@ -1618,12 +1563,12 @@ function calculateDistance(elementNumber, dropZoneNumber) {
 }
 
 function calculateColor(distance) {
-	// "Warmest" color (same teal-green as .correct-hover): rgb(100, 255, 218)
-	// "Coldest" color (bright red): rgb(255, 40, 40)
+	// "Warmest" color (correct / closest slot): deep reagent green
+	// "Coldest" color (furthest slot): red
 
-	const r = Math.round(lerp(100, 255, distance));
-	const g = Math.round(lerp(255, 40, distance));
-	const b = Math.round(lerp(218, 40, distance));
+	const r = Math.round(lerp(46, 192, distance));
+	const g = Math.round(lerp(125, 57, distance));
+	const b = Math.round(lerp(91, 43, distance));
 
 	return `rgb(${r}, ${g}, ${b})`;
 }
@@ -1715,11 +1660,17 @@ function handleDrop(e) {
 	// Remove hover effect regardless of drop success
 	zone.classList.remove("correct-hover");
 
+	// Count a genuine placement attempt on an empty, non-spacer zone
+	if (draggedElement && !zone.hasChildNodes() && zone.dataset.group !== "spacer") {
+		totalAttempts++;
+	}
+
 	// Only allow drop if the zone is empty and it's the correct position
 	if (!zone.hasChildNodes() && elementNumber === position && draggedElement) {
 		zone.appendChild(draggedElement);
 		zone.classList.add("correct");
 		draggedElement.classList.remove("dragging");
+		correctPlacements++;
 		if (!isTimerExpired) {
 			currentScore += POINTS_PER_CORRECT;
 			updateScoreDisplay();
@@ -1781,7 +1732,10 @@ function saveGameState() {
 	const gameState = {
 		currentScore,
 		currentLevel,
+		totalAttempts,
+		correctPlacements,
 		timeRemaining,
+		gameTotalSeconds,
 		isGamePaused,
 		isTimerExpired
 	};
@@ -1794,7 +1748,10 @@ function loadGameState() {
 		const gameState = JSON.parse(savedState);
 		currentScore = gameState.currentScore;
 		currentLevel = gameState.currentLevel;
+		totalAttempts = gameState.totalAttempts || 0;
+		correctPlacements = gameState.correctPlacements || 0;
 		timeRemaining = gameState.timeRemaining;
+		gameTotalSeconds = gameState.gameTotalSeconds || TIMER_SECONDS;
 		isGamePaused = gameState.isGamePaused;
 		isTimerExpired = gameState.isTimerExpired;
 		return true;
@@ -1927,34 +1884,9 @@ async function initGame() {
 	// Load config early (maintenance / blocks / feature toggles)
 	await loadSiteConfig();
 
-	// Check if URL has download parameter (from email link)
-	const urlParams = new URLSearchParams(window.location.search);
-	const downloadCode = urlParams.get('download');
-	if (downloadCode) {
-		// User clicked download link from email
-		// Retrieve certificate from localStorage and trigger download
-		try {
-			const storeKey = 'periodicCertificates';
-			const raw = localStorage.getItem(storeKey);
-			if (raw) {
-				const map = JSON.parse(raw);
-				const cert = map[downloadCode];
-				if (cert && cert.name) {
-					// Regenerate and auto-download the certificate
-					generateCertificate(cert.name, { 
-						autoDownload: true, 
-						showModal: false, 
-						code: downloadCode,
-						score: cert.score 
-					});
-					// Clean URL
-					window.history.replaceState({}, document.title, window.location.pathname);
-				}
-			}
-		} catch (e) {
-			console.error('Download error:', e);
-		}
-	}
+	// Always draw the empty board first so the table is visible immediately
+	// (even before the player enters their name).
+	createDropZones();
 
 	// Check if player name is stored; if not, show welcome modal
 	let playerName = localStorage.getItem('periodicPlayerName');
@@ -1977,6 +1909,8 @@ function initGameAfterWelcome() {
 
 	currentScore = 0;
 	currentLevel = 1;
+	totalAttempts = 0;
+	correctPlacements = 0;
 	isGamePaused = false;
 	isTimerExpired = false;
 	isGameStarted = false;
@@ -1990,7 +1924,10 @@ function initGameAfterWelcome() {
 	// Try to load saved state and preserve loaded timer if present
 	const loaded = loadGameState();
 	if (loaded) isGameStarted = true;
-	else timeRemaining = getDefaultTimerSeconds();
+	else {
+		timeRemaining = getDefaultTimerSeconds();
+		gameTotalSeconds = timeRemaining;
+	}
 	updateTimerDisplay();
 	// Enable client-side protections to reduce right-click / devtools access
 	enableHighProtection();
@@ -2037,21 +1974,16 @@ function initGameAfterWelcome() {
 	if (!window._headerButtonsSetup) {
 		const shareBtn = document.getElementById('share-button');
 		if (shareBtn) shareBtn.addEventListener('click', () => openModal('share-modal'));
-		const certBtn = document.getElementById('cert-button');
-		if (certBtn) certBtn.addEventListener('click', () => {
+		const resultsBtn = document.getElementById('results-button');
+		if (resultsBtn) resultsBtn.addEventListener('click', () => {
 			if (!isGameComplete) {
-				showInfo('Complete the game first to receive a certificate.');
+				showInfo('Complete the game first to download your results.');
 			} else {
-				openModal('cert-input-modal');
+				openResultsModal();
 			}
 		});
-		const verifyBtn = document.getElementById('verify-button');
-		if (verifyBtn) verifyBtn.addEventListener('click', () => openModal('verify-modal'));
 		window._headerButtonsSetup = true;
 	}
-
-	// Apply feature toggles (admin button may not exist on the public page)
-	setButtonEnabled('admin-button', !!siteConfig?.features?.adminButton);
 
 	// Maintenance mode check
 	if (siteConfig?.maintenance?.enabled) {
@@ -2059,12 +1991,7 @@ function initGameAfterWelcome() {
 		return;
 	}
 
-	// Blocked user check (client-side; based on last entered email)
-	const rememberedEmail = normalizeEmail(localStorage.getItem('periodicPlayerEmail'));
-	if (rememberedEmail && isEmailBlocked(rememberedEmail)) {
-		disableGameUI(siteConfig?.blocked?.message || SITE_CONFIG_DEFAULT.blocked.message);
-		return;
-	}
+
 }
 
 function handleStartReset() {
@@ -2083,11 +2010,14 @@ function handleStartReset() {
 			localStorage.removeItem("periodicGameState");
 			currentScore = 0;
 			currentLevel = 1;
+			totalAttempts = 0;
+			correctPlacements = 0;
 			isGamePaused = false;
 			isTimerExpired = false;
 			isGameComplete = false;
 			isGameStarted = false;
 			timeRemaining = getDefaultTimerSeconds();
+			gameTotalSeconds = timeRemaining;
 
 			document.querySelectorAll(".drop-zone").forEach((zone) => {
 				zone.innerHTML = "";
@@ -2122,6 +2052,8 @@ function resetGame() {
 		// Reset all game variables
 		currentScore = 0;
 		currentLevel = 1;
+		totalAttempts = 0;
+		correctPlacements = 0;
 		isGamePaused = false;
 		isTimerExpired = false;
 		isGameComplete = false;
@@ -2135,6 +2067,7 @@ function resetGame() {
 		// Reset and restart timer
 		clearInterval(timerInterval);
 		timeRemaining = getDefaultTimerSeconds();
+		gameTotalSeconds = timeRemaining;
 		startTimer();
 
 		// Update displays
@@ -2175,6 +2108,9 @@ function handleGameCompletion() {
 	isGameComplete = true;
 	clearInterval(timerInterval);
 	localStorage.removeItem("periodicGameState");
+
+	// Record this run in the player's results history
+	saveResultsHistory(localStorage.getItem('periodicPlayerName') || 'Player');
 
 	// First, clear the current elements
 	document.querySelectorAll(".drop-zone").forEach((zone) => {
@@ -2223,7 +2159,7 @@ function handleGameCompletion() {
 		)
 			.toString()
 			.padStart(2, "0")}</p>
-            <button id="get-certificate" class="celebration-button">Get Certificate</button>
+            <button id="download-results" class="celebration-button">Download Results</button>
             <button id="play-again" class="celebration-button">Play Again</button>
         `;
 
@@ -2239,27 +2175,14 @@ function handleGameCompletion() {
 			resetGame();
 		});
 
-		// Add certificate handler - auto-download on click
-		document.getElementById("get-certificate").addEventListener("click", () => {
-			const name = localStorage.getItem('periodicPlayerName') || 'Player';
-			// Auto-download set to true
-			generateCertificate(name, { autoDownload: true, showModal: true });
+		// Add results handler - auto-downloads the results card and shows the preview
+		document.getElementById("download-results").addEventListener("click", () => {
+			openResultsModal();
+			// Auto-download too
+			const link = document.getElementById('download-results-link');
+			if (link) link.click();
 		});
 	}, 2000); // Wait for confetti to start before showing the message
-	// Show email modal after celebration
-	// Show email modal after celebration and REMOVE overlay
-setTimeout(() => {
-	const emailModal = document.getElementById("email-modal");
-
-	// Remove celebration overlay so it doesn't block the modal
-	const overlay = document.querySelector(".celebration-overlay");
-	if (overlay) overlay.remove();
-
-	if (emailModal) {
-		emailModal.style.display = "flex";
-		emailModal.style.zIndex = "9999";
-	}
-}, 3500);
 }
 
 function shareScore() {
@@ -2283,71 +2206,92 @@ function shareScore() {
 	}
 }
 
-function generateCertCode() {
+// ===== Results card & history =====
+
+const RESULTS_HISTORY_KEY = 'periodicResultsHistory';
+const RESULTS_HISTORY_LIMIT = 10;
+
+function getResultStats() {
+	const accuracyPct = totalAttempts > 0 ? Math.round((correctPlacements / totalAttempts) * 100) : 100;
+	const totalSeconds = gameTotalSeconds || TIMER_SECONDS || getDefaultTimerSeconds();
+	const elapsed = Math.max(0, totalSeconds - (timeRemaining || 0));
+	const minutes = Math.floor(elapsed / 60);
+	const seconds = elapsed % 60;
+	const issuedAt = new Date();
+	const dateStr = issuedAt.toLocaleDateString();
+	const timeStr = issuedAt.getHours().toString().padStart(2, '0') + ':' + issuedAt.getMinutes().toString().padStart(2, '0');
+	return {
+		score: currentScore,
+		level: currentLevel,
+		accuracyPct,
+		correct: correctPlacements,
+		total: totalAttempts,
+		completedIn: `${minutes}:${seconds.toString().padStart(2, '0')}`,
+		elapsedSeconds: elapsed,
+		dateStr,
+		timeStr,
+		timestamp: issuedAt.getTime()
+	};
+}
+
+function loadResultsHistory() {
 	try {
-		const arr = new Uint8Array(6);
-		crypto.getRandomValues(arr);
-		return Array.from(arr)
-			.map((n) => n.toString(36).padStart(2, '0'))
-			.join('')
-			.slice(0, 8)
-			.toUpperCase();
+		const raw = localStorage.getItem(RESULTS_HISTORY_KEY);
+		if (!raw) return {};
+		const parsed = JSON.parse(raw);
+		return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
 	} catch (e) {
-		return (Math.random().toString(36).slice(2, 10)).toUpperCase();
+		return {};
 	}
 }
 
-// Draw a best badge (star-shaped with "BEST" text)
-function drawBestBadge(ctx, x, y) {
-	const radius = 50;
-	const spikes = 5;
-	
-	// Draw yellow circle background
-	ctx.fillStyle = '#FFD700';
-	ctx.beginPath();
-	ctx.arc(x, y, radius, 0, Math.PI * 2);
-	ctx.fill();
-	
-	// Draw gold border
-	ctx.strokeStyle = '#FFA500';
-	ctx.lineWidth = 3;
-	ctx.stroke();
-	
-	// Draw star inside circle
-	ctx.fillStyle = '#FF6B6B';
-	drawStar(ctx, x, y, spikes, radius * 0.6, radius * 0.3);
-	
-	// Draw "BEST" text
-	ctx.fillStyle = '#FFFFFF';
-	ctx.font = 'bold 20px sans-serif';
-	ctx.textAlign = 'center';
-	ctx.textBaseline = 'middle';
-	ctx.fillText('BEST', x, y);
+function saveResultsHistory(name) {
+	if (!name || !name.trim()) name = 'Player';
+	name = name.trim();
+	const history = loadResultsHistory();
+	const list = Array.isArray(history[name]) ? history[name] : [];
+	list.unshift(getResultStats());
+	history[name] = list.slice(0, RESULTS_HISTORY_LIMIT);
+	try {
+		localStorage.setItem(RESULTS_HISTORY_KEY, JSON.stringify(history));
+	} catch (e) {}
 }
 
-// Helper function to draw a star
-function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
-	let rot = Math.PI / 2 * 3;
-	let step = Math.PI / spikes;
-	
-	ctx.beginPath();
-	ctx.moveTo(cx, cy - outerRadius);
-	
-	for (let i = 0; i < spikes; i++) {
-		ctx.lineTo(cx + Math.cos(rot) * outerRadius, cy + Math.sin(rot) * outerRadius);
-		rot += step;
-		ctx.lineTo(cx + Math.cos(rot) * innerRadius, cy + Math.sin(rot) * innerRadius);
-		rot += step;
+function renderResultsHistory(name) {
+	const tbody = document.getElementById('results-history-body');
+	if (!tbody) return;
+	const key = (name && name.trim()) || 'Player';
+	const nameEl = document.getElementById('results-history-name');
+	if (nameEl) nameEl.textContent = key;
+
+	const list = loadResultsHistory()[key] || [];
+	tbody.innerHTML = '';
+
+	if (!list.length) {
+		const row = document.createElement('tr');
+		const cell = document.createElement('td');
+		cell.colSpan = 5;
+		cell.className = 'history-empty';
+		cell.textContent = 'No past results yet — complete a game to start your history.';
+		row.appendChild(cell);
+		tbody.appendChild(row);
+		return;
 	}
-	
-	ctx.lineTo(cx, cy - outerRadius);
-	ctx.closePath();
-	ctx.fill();
+
+	list.forEach((entry, i) => {
+		const row = document.createElement('tr');
+		[i + 1, entry.score, `${entry.accuracyPct}%`, entry.completedIn || '—', entry.dateStr || '—'].forEach((val, col) => {
+			const cell = document.createElement('td');
+			if (col === 0) cell.className = 'history-rank';
+			cell.textContent = val;
+			row.appendChild(cell);
+		});
+		tbody.appendChild(row);
+	});
 }
 
-function generateCertificate(nameParam, options = {}) {
-	const { autoDownload = false, showModal = true, level = null, code = null, admin = false, score = null } = options || {}; // score: explicit score for email downloads
-
+function generateResultsCard(nameParam, options = {}) {
+	const { autoDownload = false, showModal = true } = options || {};
 
 	let name = nameParam;
 	if (!name) {
@@ -2355,178 +2299,106 @@ function generateCertificate(nameParam, options = {}) {
 	}
 	if (!name || !name.trim()) name = 'Player';
 
-	// Use provided score or current game score
-	const certificateScore = score !== null ? score : currentScore;
-
-	const canvas = document.getElementById('certificate-canvas');
+	const canvas = document.getElementById('results-canvas');
+	if (!canvas) return;
 	const ctx = canvas.getContext('2d');
 	const w = canvas.width;
 	const h = canvas.height;
 
-	// Clear
-	ctx.fillStyle = '#ffffff';
+	// Chart-paper background
+	ctx.fillStyle = '#f4f0e7';
 	ctx.fillRect(0, 0, w, h);
 
-	// Decorative border
-	ctx.strokeStyle = '#64ffda';
-	ctx.lineWidth = 12;
+	// Ink border
+	ctx.strokeStyle = '#20242e';
+	ctx.lineWidth = 14;
 	ctx.strokeRect(20, 20, w - 40, h - 40);
 
-	// Title
-	ctx.fillStyle = '#0a192f';
-	ctx.font = '48px serif';
-	ctx.textAlign = 'center';
-	ctx.fillText('Certificate of Achievement', w / 2, 140);
+	// Category-color strip (the signature)
+	const cats = ['#e4572e', '#e8a33d', '#d98e2b', '#2e9e4f', '#1e9aa8', '#2f6fd0', '#7a5cd0', '#b64bb8', '#d1558f'];
+	const stripW = (w - 80) / cats.length;
+	cats.forEach((c, i) => {
+		ctx.fillStyle = c;
+		ctx.fillRect(40 + i * stripW, 40, stripW + 1, 8);
+	});
 
-	// Subtitle
-	ctx.fillStyle = '#333';
-	ctx.font = '22px sans-serif';
-	ctx.fillText('This certifies that', w / 2, 210);
+	// Title
+	ctx.fillStyle = '#20242e';
+	ctx.font = '800 46px "Bricolage Grotesque", sans-serif';
+	ctx.textAlign = 'center';
+	ctx.fillText('Periodic Puzzle — Results', w / 2, 150);
 
 	// Name
-	ctx.fillStyle = '#0a192f';
-	ctx.font = 'bold 42px serif';
-	ctx.fillText(name, w / 2, 290);
+	ctx.fillStyle = '#5e6472';
+	ctx.font = '22px "Karla", sans-serif';
+	ctx.fillText('completed by', w / 2, 200);
+	ctx.fillStyle = '#20242e';
+	ctx.font = 'bold 44px "Bricolage Grotesque", sans-serif';
+	ctx.fillText(name, w / 2, 260);
 
-	// Achievement line
-	ctx.fillStyle = '#333';
-	ctx.font = '20px sans-serif';
-	if (level) ctx.fillText(`has completed Level ${level} of the Periodic Puzzle`, w / 2, 340);
-	else ctx.fillText(`has successfully completed the Periodic Puzzle`, w / 2, 340);
+	// Stats (shared with the history record)
+	const stats = getResultStats();
+	ctx.fillStyle = '#20242e';
+	ctx.font = '28px "IBM Plex Mono", monospace';
+	ctx.fillText(`Score: ${stats.score}`, w / 2, 340);
+	ctx.fillText(`Level: ${stats.level}`, w / 2, 390);
 
-	// Score (use certificateScore instead of currentScore)
-	ctx.fillStyle = '#0a192f';
-	ctx.font = '28px sans-serif';
-	ctx.fillText(`Score: ${certificateScore}`, w / 2, 420);
+	// Accuracy: correct placements vs total attempts
+	ctx.fillText(`Accuracy: ${stats.accuracyPct}% (${stats.correct}/${stats.total})`, w / 2, 440);
 
-	// Date and Time
-	const issuedAt = new Date();
-	const dateStr = issuedAt.toLocaleDateString();
-	const timeStr = issuedAt.getHours().toString().padStart(2, '0') + ':' + issuedAt.getMinutes().toString().padStart(2, '0');
-	ctx.font = '18px sans-serif';
-	ctx.fillText(`Date: ${dateStr}`, w / 2, 480);
-	ctx.fillText(`Time: ${timeStr}`, w / 2, 520);
+	// "Completed in" = total timer minus what's left (the time the player actually took)
+	ctx.fillText(`Completed in ${stats.completedIn}`, w / 2, 490);
 
-	// Draw Best Badge (star-like badge at top-right)
-	drawBestBadge(ctx, w - 120, 80);
+	// Date & time
+	ctx.fillStyle = '#5e6472';
+	ctx.font = '18px "Karla", sans-serif';
+	ctx.fillText(`Completed: ${stats.dateStr} · ${stats.timeStr}`, w / 2, 550);
 
-	// Small footer
-	ctx.font = '16px sans-serif';
-	ctx.fillStyle = '#666';
-	ctx.fillText('Periodic Puzzle — By SHAHROZ', w / 2, h - 120);
+	// Footer
+	ctx.font = '16px "Karla", sans-serif';
+	ctx.fillStyle = '#5e6472';
+	ctx.fillText('Periodic Puzzle — By SHAHROZ', w / 2, h - 90);
 
-	// Certificate unique code (8 chars) — allow overriding via options.code
-	const certCode = code || generateCertCode();
-	ctx.font = '20px monospace';
-	ctx.fillStyle = '#0a192f';
-	ctx.fillText(`Certificate Code: ${certCode}`, w / 2, h - 80);
+	const dataUrl = canvas.toDataURL('image/png');
+	const filename = `periodic-puzzle-results-${Date.now()}.png`;
 
-	// Build verification URL (users can verify on the same site)
-	const verificationURL = `${location.origin}${location.pathname}?verify=${certCode}`;
-
-	// Prepare download/display function that can be called regardless of QR loading
-	
-	const finalizeAndDownload = () => {
-		// Save certificate metadata to localStorage for verification
-		try {
-			const storeKey = 'periodicCertificates';
-			const raw = localStorage.getItem(storeKey);
-			const map = raw ? JSON.parse(raw) : {};
-			map[certCode] = {
-				name,
-				score: certificateScore,
-				date: dateStr,
-				time: timeStr,
-				code: certCode,
-				url: location.href,
-				admin: admin ? true : false
-			};
-			localStorage.setItem(storeKey, JSON.stringify(map));
-		} catch (err) {
-			console.warn('Could not save certificate to localStorage', err);
-		}
-
-		const dataUrl = canvas.toDataURL('image/png');
-		const filename = `periodic-puzzle-certificate-${certCode}.png`;
-
-		// Auto-download if requested
-		if (autoDownload) {
-			try {
-				const a = document.createElement('a');
-				a.href = dataUrl;
-				a.download = filename;
-				document.body.appendChild(a);
-				a.click();
-				a.remove();
-			} catch (e) {
-				console.warn('Auto-download failed', e);
-			}
-		}
-
-		// Show modal if requested
-		if (showModal) {
-			const modal = document.getElementById('certificate-modal');
-			const downloadLink = document.getElementById('download-cert');
-			modal.style.display = 'flex';
-			if (downloadLink) {
-				downloadLink.href = dataUrl;
-				downloadLink.download = filename;
-				downloadLink.style.opacity = '1';
-				downloadLink.style.pointerEvents = 'auto';
-			}
-
-			const codeEl = document.getElementById('cert-code');
-			if (codeEl) codeEl.textContent = `Certificate Code: ${certCode}`;
-
-			// Attach close button handler
-			const closeBtn = document.getElementById('close-cert');
-			if (closeBtn) closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
-		}
-	};
-
-	// Draw QR code (use tinyqrc.com API)
-	const qrImg = new Image();
-	qrImg.crossOrigin = 'Anonymous';
-	qrImg.src = 'https://api.tinyqrc.com/v1/qr?data=' + encodeURIComponent(verificationURL) + '&size=160x160';
-	
-	let qrLoaded = false;
-	
-	qrImg.onload = () => {
-		qrLoaded = true;
-		// Draw QR at bottom-right corner
-		const size = 160;
-		ctx.drawImage(qrImg, w - size - 40, h - size - 40, size, size);
-		finalizeAndDownload();
-	};
-
-	qrImg.onerror = () => {
-		qrLoaded = true;
-		console.warn('QR generation failed — proceeding without QR');
-		finalizeAndDownload();
-	};
-	
-	// Fallback: if QR doesn't load in 2 seconds, proceed anyway
-	setTimeout(() => {
-		if (!qrLoaded) {
-			console.warn('QR loading timeout - proceeding without QR');
-			finalizeAndDownload();
-		}
-	}, 2000);
-}
-
-function verifyCertificateByCode(code) {
-	const storeKey = 'periodicCertificates';
-	const raw = localStorage.getItem(storeKey);
-	if (!raw) return null;
-	try {
-		const map = JSON.parse(raw);
-		return map[code] || null;
-	} catch (e) {
-		return null;
+	// Wire up the download link if a results modal is present
+	const downloadLink = document.getElementById('download-results-link');
+	if (downloadLink) {
+		downloadLink.href = dataUrl;
+		downloadLink.download = filename;
 	}
+
+	// Auto-download if requested
+	if (autoDownload) {
+		try {
+			const a = document.createElement('a');
+			a.href = dataUrl;
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+		} catch (e) {}
+	}
+
+	// Show modal with the rendered card
+	if (showModal) {
+		const modal = document.getElementById('results-modal');
+		if (modal) modal.style.display = 'flex';
+	}
+}function openResultsModal() {
+	// Clear the celebration overlay so the results modal isn't hidden behind it
+	const overlay = document.querySelector(".celebration-overlay");
+	if (overlay) overlay.remove();
+	const name = localStorage.getItem('periodicPlayerName') || 'Player';
+	generateResultsCard(name, {
+		autoDownload: false,
+		showModal: true
+	});
+	// Show this player's past results
+	renderResultsHistory(name);
 }
 
-// Modal utilities and handlers
 function openModal(id) {
 	const el = document.getElementById(id);
 	if (!el) return;
@@ -2575,61 +2447,11 @@ function setupModalHandlers() {
 	document.getElementById('share-close-btn').addEventListener('click', () => closeModal('share-modal'));
 	document.getElementById('share-modal').addEventListener('click', (e) => { if (e.target.id === 'share-modal') closeModal('share-modal'); });
 
-	// Certificate input modal
-	document.getElementById('cert-generate-btn').addEventListener('click', () => {
-		const name = document.getElementById('cert-name-input').value.trim();
-		if (!name) { document.getElementById('cert-input-status').textContent = 'Please enter a name.'; return; }
-		generateCertificate(name, { autoDownload: true, showModal: true });
-		closeModal('cert-input-modal');
-	});
-	document.getElementById('cert-cancel-btn').addEventListener('click', () => closeModal('cert-input-modal'));
-	document.getElementById('cert-input-modal').addEventListener('click', (e) => { if (e.target.id === 'cert-input-modal') closeModal('cert-input-modal'); });
-
-	// Verify modal
-	document.getElementById('verify-submit-btn').addEventListener('click', () => {
-		const code = document.getElementById('verify-code-input').value.trim().toUpperCase();
-		if (!code) { document.getElementById('verify-result').textContent = 'Enter a certificate code.'; return; }
-		const info = verifyCertificateByCode(code);
-		if (!info) document.getElementById('verify-result').textContent = 'Certificate not found or invalid code.';
-		else document.getElementById('verify-result').textContent = `Certificate found — Name: ${info.name}, Score: ${info.score}, Date: ${info.date}, Time: ${info.time || 'N/A'}, Code: ${info.code}`;
-	});
-	document.getElementById('verify-close-btn').addEventListener('click', () => closeModal('verify-modal'));
-	document.getElementById('verify-modal').addEventListener('click', (e) => { if (e.target.id === 'verify-modal') closeModal('verify-modal'); });
-
-	// Admin modal
-	const adminRunBtn = document.getElementById('admin-run-btn');
-	if (adminRunBtn) adminRunBtn.addEventListener('click', () => {
-		const code = document.getElementById('admin-code-input').value.trim();
-		const name = document.getElementById('admin-name-input').value.trim() || 'Admin';
-		if (!code) { document.getElementById('admin-result').textContent = 'Enter admin code.'; return; }
-		if (code !== '4017') { document.getElementById('admin-result').textContent = 'Invalid admin code.'; return; }
-		// perform admin actions (same as before)
-clearInterval(timerInterval);
-
-// Give full score
-const maxPoints = totalElements * POINTS_PER_CORRECT;
-currentScore = maxPoints + POINTS_PER_CORRECT;
-updateScoreDisplay();
-
-// 🔥 CRITICAL: trigger real game completion
-handleGameCompletion();
-
-// Issue admin certificate AFTER completion UI appears
-setTimeout(() => {
-	generateCertificate(name, {
-		autoDownload: true,
-		showModal: true,
-		admin: true
-	});
-}, 1000);
-
-document.getElementById('admin-result').textContent =
-	'Admin action completed. Game finished and certificate issued.';
-	});
-	const adminCancelBtn = document.getElementById('admin-cancel-btn');
-	if (adminCancelBtn) adminCancelBtn.addEventListener('click', () => closeModal('admin-modal'));
-	const adminModal = document.getElementById('admin-modal');
-	if (adminModal) adminModal.addEventListener('click', (e) => { if (e.target.id === 'admin-modal') closeModal('admin-modal'); });
+	// Results modal
+	const resultsCloseBtn = document.getElementById('results-close-btn');
+	if (resultsCloseBtn) resultsCloseBtn.addEventListener('click', () => closeModal('results-modal'));
+	const resultsModal = document.getElementById('results-modal');
+	if (resultsModal) resultsModal.addEventListener('click', (e) => { if (e.target.id === 'results-modal') closeModal('results-modal'); });
 
 	// Info modal
 	document.getElementById('info-close-btn').addEventListener('click', () => closeModal('info-modal'));
@@ -2819,251 +2641,6 @@ if (!window._modalSetup) {
 
 // Start the game when page loads
 window.addEventListener("load", initGame);
-function sendCertificateEmail() {
-	const emailInput = document.getElementById("player-email");
-	const status = document.getElementById("email-status");
-
-	if (!emailInput || !status) return;
-
-	const email = emailInput.value.trim();
-
-	// Feature toggle: disable email sending
-	if (siteConfig?.features?.emailCertificate === false) {
-		status.textContent = "❌ Email certificates are disabled right now.";
-		return;
-	}
-
-	if (!email || !email.includes("@")) {
-		status.textContent = "❌ Please enter a valid email address";
-		return;
-	}
-
-	// Remember email (used for client-side blocking on next visits)
-	try { localStorage.setItem('periodicPlayerEmail', email); } catch (e) {}
-
-	// Block list check
-	if (isEmailBlocked(email)) {
-		status.textContent = siteConfig?.blocked?.message || "This email is blocked.";
-		return;
-	}
-
-	status.textContent = "📧 Generating certificate...";
-
-	// Generate certificate and get the data URL
-	const canvas = document.getElementById('certificate-canvas');
-	const ctx = canvas.getContext('2d');
-	const w = canvas.width;
-	const h = canvas.height;
-	const name = email.split('@')[0];
-
-	// Clear and draw certificate
-	ctx.fillStyle = '#ffffff';
-	ctx.fillRect(0, 0, w, h);
-
-	// Decorative border
-	ctx.strokeStyle = '#64ffda';
-	ctx.lineWidth = 12;
-	ctx.strokeRect(20, 20, w - 40, h - 40);
-
-	// Title
-	ctx.fillStyle = '#0a192f';
-	ctx.font = '48px serif';
-	ctx.textAlign = 'center';
-	ctx.fillText('Certificate of Achievement', w / 2, 140);
-
-	// Subtitle
-	ctx.fillStyle = '#333';
-	ctx.font = '22px sans-serif';
-	ctx.fillText('This certifies that', w / 2, 210);
-
-	// Name
-	ctx.fillStyle = '#0a192f';
-	ctx.font = 'bold 42px serif';
-	ctx.fillText(name, w / 2, 290);
-
-	// Achievement
-	ctx.fillStyle = '#333';
-	ctx.font = '20px sans-serif';
-	ctx.fillText('has successfully completed the Periodic Puzzle', w / 2, 340);
-
-	// Score
-	ctx.fillStyle = '#0a192f';
-	ctx.font = '28px sans-serif';
-	ctx.fillText(`Score: ${currentScore}`, w / 2, 420);
-
-	// Date and Time
-	const now = new Date();
-	const dateStr = now.toLocaleDateString();
-	const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-	ctx.font = '18px sans-serif';
-	ctx.fillText(`Date: ${dateStr}`, w / 2, 480);
-	ctx.fillText(`Time: ${timeStr}`, w / 2, 520);
-
-	// Draw Best Badge
-	drawBestBadge(ctx, w - 120, 80);
-
-	// Footer
-	ctx.font = '16px sans-serif';
-	ctx.fillStyle = '#666';
-	ctx.fillText('Periodic Puzzle — By SHAHROZ', w / 2, h - 120);
-
-	// Certificate code
-	const certCode = generateCertCode();
-	ctx.font = '20px monospace';
-	ctx.fillStyle = '#0a192f';
-	ctx.fillText(`Certificate Code: ${certCode}`, w / 2, h - 80);
-
-	// Get certificate as base64 with quality optimization
-	const certificateImage = canvas.toDataURL('image/jpeg', 0.8);
-
-	// Send via EmailJS
-	status.textContent = "📤 Sending email...";
-
-	// EmailJS configuration
-	const serviceID = 'service_dlozwz4';
-	const templateID = 'template_qfh6lec';
-	const publicKey = 'yNc2k0colkBeS_eTO';
-
-	// Ensure EmailJS is initialized (safe to call more than once)
-	try {
-		if (typeof emailjs !== 'undefined' && typeof emailjs.init === 'function') {
-			emailjs.init(publicKey);
-		}
-	} catch (e) {
-		// ignore
-	}
-
-	// Check if EmailJS is loaded
-	if (typeof emailjs === 'undefined') {
-		status.textContent = "❌ EmailJS not loaded. Please refresh the page.";
-		console.error('EmailJS SDK not loaded');
-		return;
-	}
-
-	// Generate verification URL
-	const verificationURL = `${location.origin}${location.pathname}?verify=${certCode}`;
-
-	// Send email using the initialized EmailJS SDK
-	emailjs.send(serviceID, templateID, {
-		// Recipient fields (EmailJS template "To email" must reference one of these)
-		to_email: email,
-		email: email,
-		user_email: email,
-		recipient: email,
-		recipient_email: email,
-		reply_to: email,
-
-		// Name fields
-		to_name: name,
-		name: name,
-		player_name: name,
-
-		// Template fields (match your template HTML)
-		score: currentScore,
-		date: dateStr,
-		time: timeStr,
-		certCode: certCode,
-
-		// Don't send certificate image - it exceeds 50KB limit
-		// Users can download via the download_link instead
-		
-		// Backward-compatible aliases (safe to keep)
-		completion_date: dateStr,
-		completion_time: timeStr,
-		certificate_code: certCode,
-		verification_url: verificationURL,
-		game_url: location.href,
-		// Download link (point to a page that triggers download)
-		download_link: `${location.origin}${location.pathname}?download=${certCode}`,
-		message: `Congratulations ${name}! You've completed the Periodic Puzzle with a score of ${currentScore}. Your certificate code is: ${certCode}`
-	})
-	.then((response) => {
-		status.textContent = "✅ Certificate sent successfully! Check your inbox.";
-		// Save certificate locally
-		try {
-			const storeKey = 'periodicCertificates';
-			const raw = localStorage.getItem(storeKey);
-			const map = raw ? JSON.parse(raw) : {};
-			map[certCode] = {
-				name,
-				score: currentScore,
-				date: dateStr,
-				time: timeStr,
-				code: certCode,
-				email: email,
-				url: location.href
-			};
-			localStorage.setItem(storeKey, JSON.stringify(map));
-		} catch (err) {
-			console.warn('Could not save certificate to localStorage', err);
-		}
-		setTimeout(() => closeEmailModal(), 3000);
-	})
-	.catch((error) => {
-		console.error('EmailJS Full Error:', error);
-		console.error('Error status:', error.status);
-		console.error('Error text:', error.text);
-
-		// Show the *actual* EmailJS error in the UI (DevTools is blocked by the page)
-		const statusCode = (error && typeof error.status !== 'undefined') ? String(error.status) : 'unknown';
-		const errorText = (error && error.text) ? String(error.text) : 'No error text provided';
-		status.innerHTML = `❌ Failed to send email.<br><small>Status: ${statusCode}</small><br><small>${errorText}</small>`;
-		
-		// Common quick hints (based on typical EmailJS errors)
-		if (/recipients?|to_email|destination/i.test(errorText)) {
-			status.innerHTML += '<br><small>Hint: In EmailJS template settings, set “To email” to {{to_email}} and ensure you pass to_email.</small>';
-		} else if (/user id|public key|invalid user/i.test(errorText)) {
-			status.innerHTML += '<br><small>Hint: Public key is wrong or EmailJS init is not happening.</small>';
-		} else if (/service.*not found|template.*not found/i.test(errorText)) {
-			status.innerHTML += '<br><small>Hint: Service ID / Template ID mismatch.</small>';
-		} else if (/not authorized|blocked|origin/i.test(errorText)) {
-			status.innerHTML += '<br><small>Hint: Check EmailJS “Allowed origins” for localhost.</small>';
-		}
-		
-		// Offer download as fallback
-		setTimeout(() => {
-			status.innerHTML = '💾 Download certificate instead?<br>';
-			const downloadBtn = document.createElement('button');
-			downloadBtn.textContent = 'Download Certificate';
-			downloadBtn.className = 'celebration-button';
-			downloadBtn.style.marginTop = '10px';
-			downloadBtn.onclick = () => {
-				// Save certificate locally first
-				try {
-					const storeKey = 'periodicCertificates';
-					const raw = localStorage.getItem(storeKey);
-					const map = raw ? JSON.parse(raw) : {};
-					map[certCode] = {
-						name,
-						score: currentScore,
-						date: dateStr,
-						time: timeStr,
-						code: certCode,
-						email: email,
-						url: location.href
-					};
-					localStorage.setItem(storeKey, JSON.stringify(map));
-				} catch (err) {
-					console.warn('Could not save certificate to localStorage', err);
-				}
-				
-				// Download certificate
-				const a = document.createElement('a');
-				a.href = certificateImage;
-				a.download = `periodic-puzzle-certificate-${certCode}.png`;
-				a.click();
-				setTimeout(() => closeEmailModal(), 500);
-			};
-			status.appendChild(downloadBtn);
-		}, 1500);
-	});
-}
-
-function closeEmailModal() {
-	const modal = document.getElementById("email-modal");
-	if (modal) modal.style.display = "none";
-}
-
 // ==== Difficulty Selection Modal ====
 function showDifficultyModal() {
 	const modal = document.getElementById('welcome-modal');
@@ -3176,173 +2753,10 @@ function startGameWithDifficulty() {
 	
 	// Recalculate timer based on selected difficulty
 	timeRemaining = getDefaultTimerSeconds();
+	gameTotalSeconds = timeRemaining;
 	updateTimerDisplay();
 	
 	// Initialize first level
 	initLevel();
 }
 
-// ==== Verify Certificate Handlers ====
-document.addEventListener('DOMContentLoaded', () => {
-	const verifyModal = document.getElementById('verify-modal');
-	const verifyScanBtn = document.getElementById('verify-scan-btn');
-	const verifyManualBtn = document.getElementById('verify-manual-btn');
-	const scanArea = document.getElementById('verify-scan-area');
-	const manualArea = document.getElementById('verify-manual-area');
-	const verifyResult = document.getElementById('verify-result');
-	const verifyCloseBtn = document.getElementById('verify-close-btn');
-	const verifyBackBtn = document.getElementById('verify-back-btn');
-	const verifySubmitBtn = document.getElementById('verify-submit-btn');
-	const stopScanBtn = document.getElementById('stop-scan-btn');
-	const qrVideo = document.getElementById('qr-video');
-	const qrCanvas = document.getElementById('qr-canvas');
-
-	let videoStream = null;
-	let scanning = false;
-
-	// Show scan option
-	if (verifyScanBtn) {
-		verifyScanBtn.addEventListener('click', () => {
-			scanArea.style.display = 'block';
-			manualArea.style.display = 'none';
-			verifyResult.textContent = '';
-			startQRScanning();
-		});
-	}
-
-	// Show manual entry option
-	if (verifyManualBtn) {
-		verifyManualBtn.addEventListener('click', () => {
-			scanArea.style.display = 'none';
-			manualArea.style.display = 'block';
-			verifyResult.textContent = '';
-			stopQRScanning();
-		});
-	}
-
-	// Back button from manual entry
-	if (verifyBackBtn) {
-		verifyBackBtn.addEventListener('click', () => {
-			scanArea.style.display = 'none';
-			manualArea.style.display = 'none';
-			document.getElementById('verify-code-input').value = '';
-		});
-	}
-
-	// Verify certificate by code
-	if (verifySubmitBtn) {
-		verifySubmitBtn.addEventListener('click', () => {
-			const code = document.getElementById('verify-code-input').value.trim().toUpperCase();
-			if (!code) {
-				verifyResult.textContent = 'Please enter a certificate code.';
-				verifyResult.style.color = '#ff6b6b';
-				return;
-			}
-			verifyCertificate(code);
-		});
-	}
-
-	// Stop scanning
-	if (stopScanBtn) {
-		stopScanBtn.addEventListener('click', stopQRScanning);
-	}
-
-	// Close modal
-	if (verifyCloseBtn) {
-		verifyCloseBtn.addEventListener('click', () => {
-			if (verifyModal) verifyModal.style.display = 'none';
-			stopQRScanning();
-			scanArea.style.display = 'none';
-			manualArea.style.display = 'none';
-			verifyResult.textContent = '';
-		});
-	}
-
-	function startQRScanning() {
-		if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-			verifyResult.textContent = 'Camera access not supported in this browser.';
-			verifyResult.style.color = '#ff6b6b';
-			return;
-		}
-
-		scanning = true;
-		navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-			.then(stream => {
-				videoStream = stream;
-				qrVideo.srcObject = stream;
-				qrVideo.play();
-				requestAnimationFrame(scanQRCode);
-			})
-			.catch(err => {
-				verifyResult.textContent = 'Camera access denied or unavailable.';
-				verifyResult.style.color = '#ff6b6b';
-				console.error('Camera error:', err);
-			});
-	}
-
-	function stopQRScanning() {
-		scanning = false;
-		if (videoStream) {
-			videoStream.getTracks().forEach(track => track.stop());
-			videoStream = null;
-		}
-		if (qrVideo) qrVideo.srcObject = null;
-	}
-
-	function scanQRCode() {
-		if (!scanning || !qrVideo.readyState === qrVideo.HAVE_ENOUGH_DATA) {
-			if (scanning) requestAnimationFrame(scanQRCode);
-			return;
-		}
-
-		const canvas = qrCanvas;
-		const ctx = canvas.getContext('2d');
-		canvas.width = qrVideo.videoWidth;
-		canvas.height = qrVideo.videoHeight;
-		ctx.drawImage(qrVideo, 0, 0, canvas.width, canvas.height);
-
-		try {
-			const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-			// Simple QR detection using jsQR library would go here
-			// For now, we'll just use manual entry as the primary method
-		} catch (e) {
-			console.error('QR scan error:', e);
-		}
-
-		if (scanning) requestAnimationFrame(scanQRCode);
-	}
-
-	function verifyCertificate(code) {
-		try {
-			const storeKey = 'periodicCertificates';
-			const raw = localStorage.getItem(storeKey);
-			if (!raw) {
-				verifyResult.textContent = `❌ Certificate ${code} not found in this browser.`;
-				verifyResult.style.color = '#ff6b6b';
-				return;
-			}
-
-			const map = JSON.parse(raw);
-			const cert = map[code];
-
-			if (!cert) {
-				verifyResult.textContent = `❌ Certificate ${code} not found.`;
-				verifyResult.style.color = '#ff6b6b';
-				return;
-			}
-
-			const date = new Date(cert.timestamp).toLocaleDateString();
-			verifyResult.innerHTML = `
-				✅ <strong>Valid Certificate!</strong><br>
-				Name: ${cert.name}<br>
-				Issued: ${date}<br>
-				Score: ${cert.score || 'N/A'}
-			`;
-			verifyResult.style.color = '#64ffda';
-		} catch (e) {
-			verifyResult.textContent = '❌ Verification failed. Invalid data.';
-			verifyResult.style.color = '#ff6b6b';
-			console.error('Verify error:', e);
-		}
-	}
-});

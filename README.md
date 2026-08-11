@@ -6,12 +6,18 @@
 
 <h3 align="center">Learn Chemistry. Solve Puzzles. Master the Periodic Table.</h3>
 
+<p align="center"><em>Put every element in its place.</em></p>
+
 <p align="center">
   <strong>Periodix</strong> is an interactive, game-based learning experience designed to make mastering the periodic table faster, more visual, and more enjoyable.
 </p>
 
 <p align="center">
-  <a href="https://sherozabdulghaffar.github.io/Periodic-Table-visual-learning">🌐 Live Demo</a>
+  ⚛️ 118 elements · 🎮 6 levels · ☁️ 0 servers
+</p>
+
+<p align="center">
+  <a href="https://periodix.me/">🌐 Live Demo</a>
   •
   <a href="https://github.com/Sherozabdulghaffar/Periodic-Table-visual-learning/issues">🐛 Report a Bug</a>
 </p>
@@ -40,13 +46,17 @@ Practice the periodic table by interacting directly with the elements and placin
 
 Test how quickly you can recognize and organize elements while working against the clock.
 
-### 🏆 Certificate Completion
+### 🏆 Downloadable Results Card
 
-Complete the learning challenge and celebrate your progress with a certificate experience.
+Complete all six levels and download a results card with your name, score, level, accuracy, and the time you completed it in — drawn entirely in the browser and saved as a PNG. No server, no account.
 
-### 🤖 ORION AI
+### 📊 Per-Player Results History
 
-Periodix includes an AI-assisted learning section designed to make the platform more than just a static periodic-table reference.
+Every finished run is stored in your browser: score, accuracy, completion time, and date. The results modal lists your past runs per player name, so you can watch your scores climb run after run.
+
+### 🧪 Built-in Chemistry Tutor
+
+Periodix includes ORION, a local chemistry tutor that answers questions about elements, groups, how to play, and memory tricks — all from a knowledge base bundled with the site, with no servers involved.
 
 ### 📱 Modern Web Experience
 
@@ -55,6 +65,54 @@ Built as a browser-based application with a responsive interface so learners can
 ### 🔎 Search-Friendly
 
 The project includes SEO metadata, Open Graph information, structured data, a sitemap, and a canonical website URL to make the educational resource easier to discover.
+
+---
+
+## 🔄 How the Game Loop Works
+
+Each run is one pass around the table — twenty elements at a time, six levels in total. Here's the loop:
+
+```text
+   ┌────────────────────┐
+   │ NAME + DIFFICULTY  │
+   │ (easy / med / hard)│
+   └─────────┬──────────┘
+             ▼
+   ┌────────────────────┐        ▲  next level?
+   │ SHUFFLE 20 TILES   │        │
+   │ INTO THE TRAY      │        │
+   └─────────┬──────────┘        │
+             ▼                   │
+   ┌────────────────────┐        │
+   │ DRAG A TILE TO ITS │        │
+   │ SLOT               │        │
+   └─────────┬──────────┘        │
+             ▼                   │
+   ┌────────────────────┐        │
+   │       DROP?        │        │
+   │ correct ► clicks in│        │
+   │ wrong ► shakes &   │        │
+   │        counts acc. │        │
+   └─────────┬──────────┘        │
+             │ all 20 placed     │
+             ▼                   │
+   ┌────────────────────┐        │
+   │   LEVEL COMPLETE   ├────────┘
+   └─────────┬──────────┘
+             │ level 6 done
+             ▼
+   ┌────────────────────┐
+   │  RESULTS CARD +    │
+   │  DOWNLOAD +        │
+   │  HISTORY           │
+   └────────────────────┘
+```
+
+1. **Name & difficulty** — enter your name and pick Easy, Medium, or Hard (this adjusts the clock).
+2. **Shuffle** — the next twenty elements (eighteen on the final level) land shuffled in the tray below the board.
+3. **Drag & drop** — drag each tile to its slot. A wrong drop rattles the tile and counts against your accuracy; a right drop clicks it into place and scores points.
+4. **Level up** — place every tile to move to the next level. Six levels cover all 118 elements.
+5. **Results** — after the final level, download your results card (score, level, accuracy, time) and watch it appear in your per-player history.
 
 ---
 
@@ -90,13 +148,23 @@ Periodix is intentionally built using lightweight web technologies:
 
 * **HTML5** — Application structure
 * **CSS3** — Styling, layout, animations, and responsive design
-* **JavaScript** — Game logic and interactive functionality
+* **JavaScript** — Game logic, local tutorial knowledge base, and canvas results cards
 * **JSON** — Configuration and application data
-* **GitHub Pages** — Public deployment
+* **GitHub Pages / any static host** — Public deployment (no server required)
 * **Google Analytics** — Optional website analytics
-* **AI integration** — ORION AI learning experience
 
 ---
+
+## 🚫 Backend-Free by Design
+
+Periodix is **fully client-side** — there is no server, no API key, and no account system. Everything runs in the visitor's browser:
+
+* **Chat & tutorials** — ORION answers from the bundled knowledge base in `tutorials.js`. No network calls, works offline.
+* **Results cards** — drawn on an HTML canvas and downloaded as a PNG image, right from the browser.
+* **Game state, player name & results history** — kept in `localStorage` (past runs are saved per player and shown in the results modal).
+* **Maintenance mode** — read from the static `site-config.json` file; flip `maintenance.enabled` to `true` to show a maintenance screen with a custom message.
+
+This means the site can be hosted on GitHub Pages, Netlify, Cloudflare Pages, or any static file server — nothing else to deploy or maintain.
 
 ## 📁 Project Structure
 
@@ -105,15 +173,15 @@ Periodic-Table-visual-learning/
 │
 ├── index.html              # Periodix landing page
 ├── periodic.html           # Interactive periodic-table experience
-├── chat.html               # ORION AI interface
-├── chat.js                 # AI chat functionality
-├── chatbot-widget.js       # AI widget
+├── chat.html               # ORION tutor interface
+├── chat.js                 # Chat page logic (uses the local tutor)
+├── tutorials.js            # Built-in chemistry knowledge base (local ORION)
+├── chatbot-widget.js       # Floating chat widget (local tutor)
 │
 ├── script.js               # Main application/game logic
 ├── style.css               # Main styling
 │
-├── site-config.json        # Site configuration
-├── api-config.js           # API configuration
+├── site-config.json        # Site configuration (maintenance mode, etc.)
 │
 ├── logo.png                # Periodix logo
 ├── logo.svg                # Vector logo
@@ -121,7 +189,7 @@ Periodic-Table-visual-learning/
 │
 ├── sitemap.xml             # Search-engine sitemap
 ├── robots.txt              # Crawler configuration
-└── confetti.browser.min.js # Celebration effects
+└── confetti.browser.min.js # Celebration effects (local, no CDN)
 ```
 
 ---
@@ -197,10 +265,10 @@ Periodix is an ongoing project. Some areas I would like to explore include:
 
 * 📚 More chemistry learning modes
 * 🧠 Additional memory-training exercises
-* 🎯 More difficulty levels
+* 🎯 Additional difficulty options beyond Easy / Medium / Hard
 * 🏅 Improved achievement and progression systems
-* 📊 Learning statistics and progress tracking
-* 🤖 More capable AI-assisted explanations
+* 📊 Cross-device history sync, class leaderboards, and shared progress
+* 🧪 A larger built-in tutorial knowledge base
 * 🌍 Internationalization and additional languages
 * ♿ Improved accessibility
 * 📱 Further mobile optimization

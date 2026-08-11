@@ -2,13 +2,5 @@
   "maintenance": {
     "enabled": false,
     "message": "We’re doing maintenance right now. Please check back soon."
-  },
-  "blocked": {
-    "emails": [],
-    "message": "This email is blocked."
-  },
-  "features": {
-    "emailCertificate": true,
-    "adminButton": false
   }
 }

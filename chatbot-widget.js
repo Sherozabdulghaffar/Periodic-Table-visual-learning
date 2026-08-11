@@ -17,24 +17,24 @@ class PeriodicChatbot {
   injectStyles() {
     const style = document.createElement('style');
     style.textContent = `
-      /* Modern Floating Chatbot Widget Styles - Blue Theme, Slower Animations, Animate All */
+      /* Floating Chatbot Widget Styles — chart-paper theme, matching Periodix */
       .chatbot-container {
         position: fixed;
         bottom: 20px;
         right: 20px;
         z-index: 10000;
-        font-family: 'Space Grotesk', 'Plus Jakarta Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+        font-family: 'Karla', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
         pointer-events: none;
       }
 
       .chatbot-button {
         width: 64px;
         height: 64px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #2563eb 0%, #a855f7 100%);
-        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #1e5b3f 0%, #2e7d5b 100%);
+        border: 2px solid #20242e;
         cursor: pointer;
-        box-shadow: 0 8px 32px 0 rgba(37, 99, 235, 0.25), 0 2px 8px 0 rgba(168, 85, 247, 0.18);
+        box-shadow: 0 8px 28px 0 rgba(32, 36, 46, 0.28);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -48,8 +48,8 @@ class PeriodicChatbot {
       .chatbot-button svg {
         width: 34px;
         height: 34px;
-        fill: #fff;
-        filter: drop-shadow(0 0 8px #fff8);
+        fill: #f4f0e7;
+        filter: drop-shadow(0 0 8px #f4f0e755);
         transition: transform 0.5s cubic-bezier(.4,2,.6,1);
       }
 
@@ -59,7 +59,7 @@ class PeriodicChatbot {
 
       .chatbot-button:hover {
         transform: scale(1.08);
-        box-shadow: 0 12px 36px 0 rgba(37, 99, 235, 0.32), 0 4px 16px 0 rgba(14, 165, 233, 0.22);
+        box-shadow: 0 12px 32px 0 rgba(32, 36, 46, 0.32);
       }
 
       .chatbot-button:active {
@@ -72,8 +72,8 @@ class PeriodicChatbot {
         top: 50%;
         width: 100%;
         height: 100%;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(37,99,235,0.18) 0%, rgba(168,85,247,0.12) 100%);
+        border-radius: 8px;
+        background: radial-gradient(circle, rgba(46,125,91,0.22) 0%, rgba(30,91,63,0.12) 100%);
         transform: translate(-50%, -50%);
         animation: pulse 3.2s infinite;
         z-index: 0;
@@ -102,11 +102,10 @@ class PeriodicChatbot {
         right: 0;
         width: 390px;
         height: 560px;
-        background: rgba(30, 41, 59, 0.82);
-        backdrop-filter: blur(24px) saturate(1.2);
-        border-radius: 22px;
-        box-shadow: 0 24px 64px 0 rgba(30, 41, 59, 0.45), 0 2px 8px 0 rgba(168, 85, 247, 0.10);
-        border: 1.5px solid rgba(168, 85, 247, 0.18);
+        background: #fbf9f3;
+        border-radius: 14px;
+        box-shadow: 0 24px 64px 0 rgba(32, 36, 46, 0.3);
+        border: 2px solid #20242e;
         display: none;
         flex-direction: column;
         overflow: hidden;
@@ -131,30 +130,26 @@ class PeriodicChatbot {
       }
 
       .chatbot-header {
-        background: linear-gradient(135deg, #2563eb 0%, #a855f7 100%);
-        backdrop-filter: blur(12px);
+        background: linear-gradient(135deg, #1e5b3f 0%, #2e7d5b 100%);
         padding: 18px 24px 16px 20px;
-        color: #fff;
+        color: #f4f0e7;
         display: flex;
         align-items: center;
         gap: 14px;
-        box-shadow: 0 4px 18px 0 rgba(168, 85, 247, 0.10);
-        border-bottom: 1px solid rgba(168, 85, 247, 0.10);
+        border-bottom: 2px solid #20242e;
         animation: chatbot-fadeIn 0.7s cubic-bezier(.4,2,.6,1);
       }
 
       .chatbot-header-icon {
         width: 44px;
         height: 44px;
-        background: rgba(255,255,255,0.18);
-        border-radius: 50%;
+        background: rgba(244,240,231,0.22);
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 22px;
-        box-shadow: 0 2px 8px 0 rgba(168, 85, 247, 0.10);
-        border: 1.5px solid rgba(168, 85, 247, 0.12);
-        backdrop-filter: blur(6px);
+        border: 1.5px solid rgba(244,240,231,0.4);
         animation: chatbot-fadeIn 0.7s cubic-bezier(.4,2,.6,1);
       }
 
@@ -183,24 +178,23 @@ class PeriodicChatbot {
       }
 
       .chatbot-close {
-        background: rgba(255,255,255,0.18);
-        border: none;
-        color: #fff;
+        background: rgba(244,240,231,0.2);
+        border: 1.5px solid rgba(244,240,231,0.4);
+        color: #f4f0e7;
         width: 32px;
         height: 32px;
-        border-radius: 50%;
+        border-radius: 6px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: background 0.28s, transform 0.38s cubic-bezier(.4,2,.6,1);
         font-size: 18px;
-        box-shadow: 0 2px 8px 0 rgba(14, 165, 233, 0.10);
         animation: chatbot-fadeIn 0.7s cubic-bezier(.4,2,.6,1);
       }
 
       .chatbot-close:hover {
-        background: rgba(255,255,255,0.28);
+        background: rgba(244,240,231,0.32);
         transform: rotate(90deg) scale(1.08);
       }
 
@@ -211,9 +205,9 @@ class PeriodicChatbot {
         display: flex;
         flex-direction: column;
         gap: 14px;
-        background: rgba(30, 41, 59, 0.18);
+        background: #f4f0e7;
         scrollbar-width: thin;
-        scrollbar-color: #2563eb #232946;
+        scrollbar-color: #1e5b3f #ece6d8;
         animation: chatbot-fadeIn 0.7s cubic-bezier(.4,2,.6,1);
       }
 
@@ -221,16 +215,16 @@ class PeriodicChatbot {
         width: 7px;
       }
       .chatbot-messages::-webkit-scrollbar-thumb {
-        background: #2563eb;
+        background: #1e5b3f;
         border-radius: 4px;
       }
       .chatbot-messages::-webkit-scrollbar-track {
-        background: #232946;
+        background: #ece6d8;
       }
 
       .chatbot-message {
         padding: 13px 18px;
-        border-radius: 15px;
+        border-radius: 10px;
         max-width: 82%;
         word-wrap: break-word;
         word-break: break-word;
@@ -239,7 +233,7 @@ class PeriodicChatbot {
         line-height: 1.6;
         font-size: 15px;
         white-space: pre-wrap;
-        box-shadow: 0 2px 8px 0 rgba(14, 165, 233, 0.06);
+        box-shadow: 0 2px 8px 0 rgba(32, 36, 46, 0.08);
         transition: background 0.28s, color 0.28s;
       }
 
@@ -255,43 +249,43 @@ class PeriodicChatbot {
       }
 
       .chatbot-message.user {
-        background: linear-gradient(135deg, #2563eb 0%, #a855f7 100%);
-        color: #33E0D1;
+        background: linear-gradient(135deg, #1e5b3f 0%, #2e7d5b 100%);
+        color: #f4f0e7;
         align-self: flex-end;
         margin-left: auto;
         border-bottom-right-radius: 6px;
         font-weight: 500;
-        box-shadow: 0 2px 8px 0 rgba(168, 85, 247, 0.10);
+        box-shadow: 0 2px 8px 0 rgba(32, 36, 46, 0.14);
         animation: chatbot-messageIn 0.7s cubic-bezier(.4,2,.6,1);
       }
 
       .chatbot-message.assistant {
-        background: rgba(255,255,255,0.10);
-        color: #33E0D1;
+        background: #fbf9f3;
+        color: #20242e;
         align-self: flex-start;
-        border: 1.2px solid rgba(168, 85, 247, 0.13);
+        border: 1.2px solid rgba(32, 36, 46, 0.16);
         border-bottom-left-radius: 6px;
         font-weight: 400;
         animation: chatbot-messageIn 0.7s cubic-bezier(.4,2,.6,1);
       }
 
       .chatbot-message.system {
-        background: rgba(168, 85, 247, 0.13);
-        color: #a855f7;
+        background: rgba(30, 91, 63, 0.1);
+        color: #1e5b3f;
         align-self: center;
         text-align: center;
         font-size: 14px;
-        border: 1.2px solid rgba(168, 85, 247, 0.22);
+        border: 1.2px solid rgba(30, 91, 63, 0.24);
         font-weight: 600;
         letter-spacing: 0.01em;
         animation: chatbot-messageIn 0.7s cubic-bezier(.4,2,.6,1);
       }
 
       .chatbot-message.error {
-        background: rgba(255, 95, 86, 0.18);
-        color: #ff9f9f;
+        background: rgba(192, 57, 43, 0.1);
+        color: #c0392b;
         align-self: center;
-        border: 1.2px solid rgba(255, 95, 86, 0.32);
+        border: 1.2px solid rgba(192, 57, 43, 0.32);
         animation: chatbot-messageIn 0.7s cubic-bezier(.4,2,.6,1);
       }
 
@@ -300,12 +294,12 @@ class PeriodicChatbot {
         align-items: center;
         gap: 5px;
         padding: 13px 18px;
-        background: rgba(255,255,255,0.10);
-        border-radius: 15px;
+        background: #ece6d8;
+        border-radius: 10px;
         max-width: 70px;
         align-self: flex-start;
-        border: 1.2px solid rgba(37, 99, 235, 0.13);
-        box-shadow: 0 2px 8px 0 rgba(14, 165, 233, 0.06);
+        border: 1.2px solid rgba(32, 36, 46, 0.16);
+        box-shadow: 0 2px 8px 0 rgba(32, 36, 46, 0.08);
         animation: chatbot-fadeIn 0.7s cubic-bezier(.4,2,.6,1);
       }
 
@@ -316,7 +310,7 @@ class PeriodicChatbot {
       .chatbot-typing-dot {
         width: 7px;
         height: 7px;
-        background: #2563eb;
+        background: #1e5b3f;
         border-radius: 50%;
         animation: chatbot-typingDot 2.2s infinite;
       }
@@ -341,9 +335,9 @@ class PeriodicChatbot {
       }
 
       .chatbot-input-container {
-        padding: 18px 18px 18px 18px;
-        background: rgba(30, 41, 59, 0.22);
-        border-top: 1.2px solid rgba(37, 99, 235, 0.13);
+        padding: 18px;
+        background: #ece6d8;
+        border-top: 1.5px solid rgba(32, 36, 46, 0.2);
         display: flex;
         gap: 10px;
         animation: chatbot-fadeIn 0.7s cubic-bezier(.4,2,.6,1);
@@ -352,10 +346,10 @@ class PeriodicChatbot {
       .chatbot-input {
         flex: 1;
         padding: 13px 18px;
-        border: 1.2px solid rgba(37, 99, 235, 0.18);
-        border-radius: 10px;
-        background: rgba(255,255,255,0.07);
-        color: #e0e7ef;
+        border: 1.5px solid rgba(32, 36, 46, 0.3);
+        border-radius: 6px;
+        background: #f4f0e7;
+        color: #20242e;
         font-size: 15px;
         font-family: inherit;
         transition: border 0.28s, background 0.28s;
@@ -364,33 +358,33 @@ class PeriodicChatbot {
 
       .chatbot-input:focus {
         outline: none;
-        border-color: #2563eb;
-        background: rgba(255,255,255,0.13);
+        border-color: #1e5b3f;
+        background: #fbf9f3;
       }
 
       .chatbot-input::placeholder {
-        color: rgba(224, 231, 239, 0.38);
+        color: rgba(32, 36, 46, 0.45);
       }
 
       .chatbot-send {
-        background: linear-gradient(135deg, #2563eb 0%, #a855f7 100%);
+        background: linear-gradient(135deg, #1e5b3f 0%, #2e7d5b 100%);
         border: none;
-        color: #fff;
+        color: #f4f0e7;
         width: 44px;
         height: 44px;
-        border-radius: 12px;
+        border-radius: 6px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: transform 0.28s, box-shadow 0.28s;
-        box-shadow: 0 2px 8px 0 rgba(168, 85, 247, 0.10);
+        box-shadow: 0 2px 8px 0 rgba(32, 36, 46, 0.14);
         animation: chatbot-fadeIn 0.7s cubic-bezier(.4,2,.6,1);
       }
 
       .chatbot-send:hover:not(:disabled) {
         transform: translateY(-2px) scale(1.08);
-        box-shadow: 0 4px 16px 0 rgba(168, 85, 247, 0.18);
+        box-shadow: 0 4px 16px 0 rgba(30, 91, 63, 0.3);
       }
 
       .chatbot-send:active:not(:disabled) {
@@ -405,13 +399,13 @@ class PeriodicChatbot {
       .chatbot-send svg {
         width: 22px;
         height: 22px;
-        fill: #fff;
+        fill: #f4f0e7;
       }
 
       .chatbot-quick-questions {
-        padding: 14px 18px 14px 18px;
-        background: rgba(30, 41, 59, 0.22);
-        border-top: 1.2px solid rgba(37, 99, 235, 0.13);
+        padding: 14px 18px;
+        background: #ece6d8;
+        border-top: 1.5px solid rgba(32, 36, 46, 0.2);
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
@@ -419,25 +413,23 @@ class PeriodicChatbot {
       }
 
       .chatbot-quick-btn {
-        background: linear-gradient(90deg, #2563eb 0%, #a855f7 100%);
-        border: 1.2px solid #a855f7;
-        color: #fff;
+        background: #fbf9f3;
+        border: 1.5px solid rgba(32, 36, 46, 0.3);
+        color: #20242e;
         padding: 7px 16px;
-        border-radius: 18px;
+        border-radius: 6px;
         font-size: 13px;
         cursor: pointer;
         font-weight: 600;
         letter-spacing: 0.01em;
         transition: background 0.28s, border 0.28s, color 0.28s, transform 0.28s;
-        box-shadow: 0 2px 8px 0 rgba(168, 85, 247, 0.06);
-        backdrop-filter: blur(4px);
         animation: chatbot-fadeIn 0.7s cubic-bezier(.4,2,.6,1);
       }
 
       .chatbot-quick-btn:hover {
-        background: linear-gradient(90deg, #a855f7 0%, #2563eb 100%);
-        border-color: #2563eb;
-        color: #fff;
+        background: #1e5b3f;
+        border-color: #1e5b3f;
+        color: #f4f0e7;
         transform: scale(1.06);
       }
 
@@ -451,7 +443,7 @@ class PeriodicChatbot {
           transform: none;
           bottom: 80px;
           max-width: 100vw;
-          border-radius: 16px;
+          border-radius: 12px;
         }
       }
 
@@ -482,8 +474,8 @@ class PeriodicChatbot {
           transform: none;
           bottom: 70px;
           max-width: 480px;
-          border-radius: 18px;
-          box-shadow: 0 8px 32px 0 rgba(168, 85, 247, 0.18);
+          border-radius: 12px;
+          box-shadow: 0 8px 32px 0 rgba(32, 36, 46, 0.28);
         }
         .chatbot-button {
           width: 56px;
@@ -538,7 +530,7 @@ class PeriodicChatbot {
         <div class="chatbot-header">
           <div class="chatbot-header-icon">🤖</div>
           <div class="chatbot-header-text">
-            <h3 class="chatbot-header-title">ORION Assistant</h3>
+            <h3 class="chatbot-header-title">ORION Tutor</h3>
             <p class="chatbot-header-subtitle">by Shahroz</p>
           </div>
           <button class="chatbot-close" id="chatbotClose">✕</button>
@@ -546,7 +538,7 @@ class PeriodicChatbot {
         
         <div class="chatbot-messages" id="chatbotMessages">
           <div class="chatbot-message system">
-            👋 Hi! I'm ORION from Periodic Puzzle by Shahroz. Ask me about elements, game tips, or anything related to the periodic table! 🧪
+            👋 Hi! I'm ORION, Periodix's built-in chemistry tutor — everything I know lives right here in your browser, no servers needed. Ask me about elements, how to play, or memory tips! 🧪⚛️
           </div>
         </div>
         
@@ -637,7 +629,7 @@ class PeriodicChatbot {
     let formattedContent = content
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // **bold**
       .replace(/\*(.*?)\*/g, '<em>$1</em>')              // *italic*
-      .replace(/`(.*?)`/g, '<code style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">$1</code>') // `code`
+      .replace(/`(.*?)`/g, '<code style="background: rgba(32,36,46,0.12); color: inherit; padding: 2px 6px; border-radius: 4px;">$1</code>') // `code`
       .replace(/\n/g, '<br>');                            // line breaks
     
     messageDiv.innerHTML = formattedContent;
@@ -677,28 +669,14 @@ class PeriodicChatbot {
     this.setTyping(true);
     
     try {
-      const apiURL = window.API_CONFIG ? window.API_CONFIG.getBaseURL() : '';
-      const response = await fetch(`${apiURL}/api/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          messages: this.conversationHistory
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      
-      const assistantMessage = data.response;
+      // Answer from the built-in tutorial knowledge base (fully local)
+      await new Promise((resolve) => setTimeout(resolve, 450 + Math.random() * 350));
+
+      const engine = window.PeriodixTutorials;
+      const assistantMessage = engine
+        ? engine.getReply(this.conversationHistory)
+        : "Tutorials are still warming up — try asking about noble gases, memory tips, or how to play!";
+
       this.addMessage('assistant', assistantMessage);
       
       this.conversationHistory.push({
@@ -707,8 +685,8 @@ class PeriodicChatbot {
       });
       
     } catch (error) {
-      console.error('Chat error:', error);
-      this.addMessage('system', `⚠️ ${error.message}. Please try again.`, true);
+      console.error('Tutor error:', error);
+      this.addMessage('system', `Something went wrong: ${error.message}. Please try again.`, true);
     } finally {
       this.setTyping(false);
     }

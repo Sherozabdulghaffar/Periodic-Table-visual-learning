@@ -1,4 +1,4 @@
-// Chat functionality for ORION AI Assistant
+// Chat functionality for ORION Tutor — fully local, no backend.
 
 const chatMessages = document.getElementById('chatMessages');
 const chatInput = document.getElementById('chatInput');
@@ -12,7 +12,11 @@ let conversationHistory = [];
 function addMessage(role, content, isError = false) {
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${isError ? 'error' : role}`;
-  messageDiv.textContent = content;
+  // Simple formatting: **bold** and line breaks
+  let html = content
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+  messageDiv.innerHTML = html;
   chatMessages.appendChild(messageDiv);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -27,59 +31,42 @@ function setTyping(isTyping) {
   }
 }
 
-// Send message to backend
+// Send message to the local tutor
 async function sendMessage() {
   const message = chatInput.value.trim();
   if (!message) return;
-  
+
   // Add user message to UI
   addMessage('user', message);
   chatInput.value = '';
-  
+
   // Add to conversation history
   conversationHistory.push({
     role: 'user',
     content: message
   });
-  
+
   // Show typing indicator
   setTyping(true);
-  
+
   try {
-    const apiURL = window.API_CONFIG ? window.API_CONFIG.getBaseURL() : 'https://shahroz1423.pythonanywhere.com';
-    const response = await fetch(`${apiURL}/api/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        messages: conversationHistory
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    if (data.error) {
-      throw new Error(data.error);
-    }
-    
-    // Add assistant response
-    const assistantMessage = data.response;
+    // Small delay so the typing indicator reads naturally
+    await new Promise((resolve) => setTimeout(resolve, 450 + Math.random() * 350));
+
+    // Answer from the built-in tutorial knowledge base
+    const engine = window.PeriodixTutorials;
+    const assistantMessage = engine
+      ? engine.getReply(conversationHistory)
+      : "Tutorials are still warming up — try asking about noble gases, memory tips, or how to play!";
+
     addMessage('assistant', assistantMessage);
-    
-    // Add to conversation history
     conversationHistory.push({
       role: 'assistant',
       content: assistantMessage
     });
-    
   } catch (error) {
-    console.error('Chat error:', error);
-    addMessage('system', `Error: ${error.message}. Please try again.`, true);
+    console.error('Tutor error:', error);
+    addMessage('system', `Something went wrong: ${error.message}`, true);
   } finally {
     setTyping(false);
   }
@@ -97,4 +84,3 @@ chatInput.addEventListener('keypress', (e) => {
 
 // Focus input on load
 chatInput.focus();
-

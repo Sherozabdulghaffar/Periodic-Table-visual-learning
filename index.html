@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -45,24 +45,32 @@
 		"description": "Periodix is an interactive periodic table game designed to help students learn chemistry through puzzles and challenges."
 	}
 	</script>
-  <link rel="stylesheet" href="./style.css">
+
+	<!-- Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<!-- Fonts load non-blocking so the page paints instantly even if the CDN is slow -->
+	<link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+	<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"></noscript>
+
+	<link rel="stylesheet" href="./style.css">
 	<link rel="icon" href="/favicon.ico" sizes="48x48">
 	<link rel="apple-touch-icon" href="/logo.png">
-  
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-B5GXGY2XYY"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-B5GXGY2XYY');
-  </script>
-  
-  <style>
-    /* High protection: disable text selection & right-click while allowing form inputs */
-    html, body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-    input, textarea, select, button { -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; }
-  </style>
+
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-B5GXGY2XYY"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+		gtag('config', 'G-B5GXGY2XYY');
+	</script>
+
+	<style>
+		/* High protection: disable text selection & right-click while allowing form inputs */
+		html, body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+		input, textarea, select, button { -webkit-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text; }
+	</style>
 </head>
 <body class="page-intro">
 	<div class="seo-header">
@@ -72,13 +80,13 @@
 	<header class="site-hero" aria-label="Intro">
 		<div class="hero-inner">
 			<nav class="top-nav" aria-label="Primary">
-				<div class="brand">
+				<a class="brand" href="./index.html">
 					<div class="brand-mark" aria-hidden="true"></div>
-					<div class="brand-text">Periodix <span class="brand-sub">Periodic Puzzle</span></div>
+					<div class="brand-text">Periodix <span class="brand-sub">P · atomic no. 15</span></div>
 					<span class="pill pill--status">Online</span>
-				</div>
+				</a>
 				<div class="nav-actions">
-					<a class="nav-link" href="./chat.html">ORION AI</a>
+					<a class="nav-link" href="./chat.html">Tutor</a>
 					<a class="nav-link" href="./periodic.html">Play</a>
 					<a class="pill pill--cta" id="intro-start" href="./periodic.html">Start</a>
 				</div>
@@ -86,21 +94,26 @@
 
 			<div class="hero-grid">
 				<div class="hero-copy">
-					  <p class="hero-kicker">Chemistry • Speed • Memory</p>
-					  <h2 class="hero-title">A modern way to master the periodic table.</h2>
-					  <p class="hero-subtitle">Drag elements into the correct slots, beat the timer, and claim your certificate when you finish.</p>
-						<!-- SiteNavigationElement schema for Google brand clarity -->
-						<script type="application/ld+json">
-						{
-							"@context": "https://schema.org",
-							"@type": "SiteNavigationElement",
-							"name": "Periodix",
-							"url": "https://periodix.me/"
-						}
-						</script>
+					<p class="hero-kicker"><strong>Periodix</strong> — the periodic table, as a puzzle</p>
+					<h2 class="hero-title">Put every element <em>in its place.</em></h2>
+					<p class="hero-subtitle">Drag the element tiles onto the chart, beat the clock, and download your results when the table is complete. Learn chemistry by building it — from hydrogen to oganesson.</p>
+					<!-- SiteNavigationElement schema for Google brand clarity -->
+					<script type="application/ld+json">
+					{
+						"@context": "https://schema.org",
+						"@type": "SiteNavigationElement",
+						"name": "Periodix",
+						"url": "https://periodix.me/"
+					}
+					</script>
 					<div class="hero-ctas">
 						<a class="cta cta--primary" href="./periodic.html">Start playing</a>
-						<a class="cta cta--secondary" href="./periodic.html">Go to puzzle</a>
+						<a class="cta cta--secondary" href="#how-it-works">How it works</a>
+					</div>
+					<div class="hero-stats" aria-label="Game facts">
+						<span class="stat-chip"><strong>118</strong> elements</span>
+						<span class="stat-chip"><strong>6</strong> levels</span>
+						<span class="stat-chip"><strong>0</strong> servers</span>
 					</div>
 					<div class="intro-ownership" aria-label="Ownership">
 						<span class="intro-ownership__label">Created by</span>
@@ -108,19 +121,50 @@
 					</div>
 				</div>
 				<div class="hero-art" aria-hidden="true">
-					<div class="ring ring--1"></div>
-					<div class="ring ring--2"></div>
-					<div class="orb orb--1"></div>
-					<div class="orb orb--2"></div>
-					<div class="sticks">
-						<span class="stick stick--1"></span>
-						<span class="stick stick--2"></span>
-						<span class="stick stick--3"></span>
+					<div class="hero-table-wrap">
+						<div class="hero-table" id="hero-table"><!-- tiles injected --></div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</header>
+
+	<!-- How it works -->
+	<section class="steps" id="how-it-works" aria-label="How it works">
+		<div class="steps-head">
+			<h2>Start at the top of the table.</h2>
+			<span class="steps-rule" aria-hidden="true"></span>
+		</div>
+		<div class="steps-grid">
+			<div class="step">
+				<span class="step-tile s-nonmetal" aria-hidden="true">
+					<span class="st-num">1</span>
+					<span class="st-sym">H</span>
+				</span>
+				<h3>Grab a tile</h3>
+				<p>Every level shuffles the next twenty elements into the tray below the board.</p>
+				<a href="./periodic.html">Start level 1</a>
+			</div>
+			<div class="step">
+				<span class="step-tile s-noble-gas" aria-hidden="true">
+					<span class="st-num">2</span>
+					<span class="st-sym">He</span>
+				</span>
+				<h3>Drag it to its slot</h3>
+				<p>The chart knows where each element belongs. A wrong drop rattles the tile — get it right and it clicks into place.</p>
+				<a href="./periodic.html">Open the chart</a>
+			</div>
+			<div class="step">
+				<span class="step-tile s-alkali-metal" aria-hidden="true">
+					<span class="st-num">3</span>
+					<span class="st-sym">Li</span>
+				</span>
+				<h3>Finish &amp; download</h3>
+				<p>Complete all six levels and download your results card — proof of a table fully memorized.</p>
+				<a href="./periodic.html">Download your results</a>
+			</div>
+		</div>
+	</section>
 
 	<!-- Maintenance overlay (shown when site-config.json enables maintenance) -->
 	<div class="modal-overlay" id="introMaintenanceOverlay" style="display:none" aria-hidden="true">
@@ -133,9 +177,60 @@
 		</div>
 	</div>
 
-	<footer class="site-footer" aria-label="Ownership">© 2026 Shahroz</footer>
+	<footer class="site-footer" aria-label="Ownership">© 2026 Shahroz · Periodix</footer>
 
 	<script>
+		// ---- Hero mini periodic table (first 36 elements, true positions) ----
+		(function () {
+			const elements = [
+				["H",1,"Hydrogen","nonmetal",1,1],["He",2,"Helium","noble-gas",1,18],
+				["Li",3,"Lithium","alkali-metal",2,1],["Be",4,"Beryllium","alkaline-earth",2,2],
+				["B",5,"Boron","metalloid",2,13],["C",6,"Carbon","nonmetal",2,14],
+				["N",7,"Nitrogen","nonmetal",2,15],["O",8,"Oxygen","nonmetal",2,16],
+				["F",9,"Fluorine","nonmetal",2,17],["Ne",10,"Neon","noble-gas",2,18],
+				["Na",11,"Sodium","alkali-metal",3,1],["Mg",12,"Magnesium","alkaline-earth",3,2],
+				["Al",13,"Aluminium","post-transition",3,13],["Si",14,"Silicon","metalloid",3,14],
+				["P",15,"Phosphorus","nonmetal",3,15],["S",16,"Sulfur","nonmetal",3,16],
+				["Cl",17,"Chlorine","nonmetal",3,17],["Ar",18,"Argon","noble-gas",3,18],
+				["K",19,"Potassium","alkali-metal",4,1],["Ca",20,"Calcium","alkaline-earth",4,2],
+				["Sc",21,"Scandium","transition",4,3],["Ti",22,"Titanium","transition",4,4],
+				["V",23,"Vanadium","transition",4,5],["Cr",24,"Chromium","transition",4,6],
+				["Mn",25,"Manganese","transition",4,7],["Fe",26,"Iron","transition",4,8],
+				["Co",27,"Cobalt","transition",4,9],["Ni",28,"Nickel","transition",4,10],
+				["Cu",29,"Copper","transition",4,11],["Zn",30,"Zinc","transition",4,12],
+				["Ga",31,"Gallium","post-transition",4,13],["Ge",32,"Germanium","metalloid",4,14],
+				["As",33,"Arsenic","metalloid",4,15],["Se",34,"Selenium","nonmetal",4,16],
+				["Br",35,"Bromine","nonmetal",4,17],["Kr",36,"Krypton","noble-gas",4,18]
+			];
+			const table = document.getElementById("hero-table");
+			if (!table) return;
+			let i = 0;
+			elements.forEach(([sym, num, name, cat, period, group]) => {
+				const cell = document.createElement("div");
+				cell.className = "hero-cell tile cat-" + cat;
+				cell.style.gridRow = period;
+				cell.style.gridColumn = group;
+				cell.style.setProperty("--i", i++);
+				cell.setAttribute("title", name + " · " + num);
+				cell.innerHTML = '<span class="t-num">' + num + '</span><span class="t-sym">' + sym + '</span><span class="t-name">' + name + '</span>';
+			table.appendChild(cell);
+		});
+
+		// Fill the rest of rows 1–4 with dashed "unfilled" cells so the
+		// chart keeps its true silhouette.
+		for (let p = 1; p <= 4; p++) {
+			for (let g = 1; g <= 18; g++) {
+				const taken = elements.some((e) => e[4] === p && e[5] === g);
+				if (taken) continue;
+				const cell = document.createElement("div");
+				cell.className = "hero-cell blank";
+				cell.style.gridRow = p;
+				cell.style.gridColumn = g;
+				table.appendChild(cell);
+			}
+		}
+	})();
+
 		(async () => {
 			try {
 				const res = await fetch('./site-config.json', { cache: 'no-store' });

@@ -4,44 +4,54 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Primary SEO -->
-  <title>AI Chemistry Chat Assistant – Ask Chemistry Questions | Periodix</title>
-  <meta name="description" content="Ask chemistry questions and learn about elements, reactions, and periodic trends using the AI chemistry assistant by Periodix.">
-  <meta name="keywords" content="AI Chemistry Chat, Chemistry Assistant, Ask Chemistry, Periodic Table AI, Chemistry Help">
+  <title>ORION Tutor – Built-in Chemistry Lessons | Periodix</title>
+  <meta name="description" content="Ask ORION, Periodix's built-in chemistry tutor, about elements, groups, how to play, and memory tips — answered instantly in your browser, no account or internet needed.">
+  <meta name="keywords" content="Chemistry Tutor, Periodic Table Help, Learn Chemistry, Element Facts, Chemistry Study Guide">
   <meta name="author" content="Shahroz">
 
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://periodix.me/chat.html">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="AI Chemistry Chat Assistant – Periodix">
-  <meta property="og:description" content="Smart AI assistant for chemistry learning and periodic table help.">
+  <meta property="og:title" content="ORION Tutor – Built-in Chemistry Lessons | Periodix">
+  <meta property="og:description" content="Ask ORION, Periodix's built-in chemistry tutor, about elements, groups, how to play, and memory tips — answered in your browser, no account needed.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://periodix.me/chat.html">
   <meta property="og:image" content="https://periodix.me/logo.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Fonts load non-blocking so the page paints instantly even if the CDN is slow -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600;700&family=Karla:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"></noscript>
+
   <link rel="stylesheet" href="./style.css">
   <link rel="icon" type="image/svg+xml" href="./logo.svg">
   <style>
+    /* Chart-paper theme, matching the Periodix design system */
     body {
       min-height: 100vh;
       margin: 0;
       background:
-        radial-gradient(900px 450px at 12% 35%, rgba(109, 40, 217, 0.40), transparent 60%),
-        radial-gradient(700px 380px at 78% 30%, rgba(37, 99, 235, 0.32), transparent 55%),
-        radial-gradient(520px 420px at 78% 82%, rgba(34, 197, 94, 0.22), transparent 55%),
-        linear-gradient(110deg, #0c1730, #0a1226 60%, #08101f);
-      color: #e8f0ff;
-      font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+        linear-gradient(rgba(32,36,46,0.06) 1px, transparent 1px) 0 0 / 100% 26px,
+        linear-gradient(90deg, rgba(32,36,46,0.06) 1px, transparent 1px) 0 0 / 26px 100%,
+        #f4f0e7;
+      color: #20242e;
+      font-family: "Karla", "Segoe UI", Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .chat-container {
-      max-width: 1100px;
-      margin: 48px auto;
+      width: min(1100px, 96vw);
+      margin: 40px auto;
       padding: 26px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      backdrop-filter: blur(14px);
-      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+      background: #fbf9f3;
+      border: 2px solid #20242e;
+      border-radius: 14px;
+      box-shadow: 0 18px 44px rgba(32, 36, 46, 0.24);
     }
 
     .chat-header {
@@ -50,7 +60,7 @@
       justify-content: space-between;
       gap: 16px;
       padding-bottom: 18px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 2px solid #20242e;
       margin-bottom: 20px;
     }
 
@@ -60,39 +70,65 @@
       gap: 12px;
     }
 
+    /* ORION avatar = the Oganesson tile (Og, atomic 118) */
     .chat-avatar {
       width: 46px;
       height: 46px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      border-radius: 6px;
+      background: #7a5cd0;
+      border: 1px solid rgba(32,36,46,0.24);
       display: grid;
-      place-items: center;
-      color: #fff;
+      grid-template-rows: 14px 1fr;
+      padding: 3px;
+      color: #20242e;
       font-weight: 700;
-      letter-spacing: 0.5px;
-      box-shadow: 0 10px 30px rgba(124, 58, 237, 0.35);
+      box-shadow: 0 6px 18px rgba(32, 36, 46, 0.16);
+      flex: none;
+    }
+
+    .chat-avatar::before {
+      content: "118";
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 9px;
+      text-align: left;
+      color: rgba(32,36,46,0.78);
+    }
+
+    .chat-avatar::after {
+      content: "Og";
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1;
+      text-align: center;
+      align-self: center;
     }
 
     .chat-header h1 {
       margin: 0;
+      font-family: "Bricolage Grotesque", sans-serif;
       font-size: 1.9rem;
-      letter-spacing: -0.4px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
     }
 
     .chat-subtitle {
       margin: 6px 0 0;
-      color: rgba(232, 240, 255, 0.72);
+      color: #5e6472;
       font-size: 0.95rem;
     }
 
     .status-pill {
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(76, 175, 80, 0.14);
-      color: #9ef7b0;
+      padding: 9px 14px;
+      border-radius: 6px;
+      background: #fbf9f3;
+      color: #1e5b3f;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12.5px;
       font-weight: 600;
-      border: 1px solid rgba(76, 175, 80, 0.28);
-      box-shadow: inset 0 0 0 1px rgba(76, 175, 80, 0.12);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border: 1px solid #1e5b3f;
     }
 
     .chat-messages {
@@ -100,9 +136,9 @@
       overflow-y: auto;
       padding: 18px;
       margin-bottom: 18px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
+      background: #f4f0e7;
+      border: 1px solid rgba(32,36,46,0.3);
+      border-radius: 10px;
       display: flex;
       flex-direction: column;
       gap: 14px;
@@ -110,13 +146,13 @@
     }
 
     .message {
-      padding: 14px 16px;
-      border-radius: 14px;
+      padding: 13px 16px;
+      border-radius: 10px;
       max-width: 78%;
       word-wrap: break-word;
       animation: fadeIn 0.28s ease;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+      border: 1px solid rgba(32,36,46,0.16);
+      box-shadow: 0 4px 12px rgba(32, 36, 46, 0.1);
     }
 
     @keyframes fadeIn {
@@ -125,33 +161,34 @@
     }
 
     .message.user {
-      background: linear-gradient(135deg, #7c3aed, #2563eb);
-      color: #fff;
+      background: #20242e;
+      color: #f4f0e7;
       align-self: flex-end;
       margin-left: auto;
     }
 
     .message.assistant {
-      background: rgba(255, 255, 255, 0.06);
-      color: #e8f0ff;
+      background: #fbf9f3;
+      color: #20242e;
       align-self: flex-start;
-      border-left: 3px solid #7c3aed;
+      border-left: 3px solid #1e5b3f;
     }
 
     .message.system {
-      background: rgba(255, 193, 7, 0.12);
-      color: #ffd666;
+      background: rgba(30, 91, 63, 0.1);
+      color: #1e5b3f;
       align-self: center;
       text-align: center;
       font-size: 0.92rem;
       max-width: 90%;
+      border-left: 3px solid #1e5b3f;
     }
 
     .message.error {
-      background: rgba(244, 67, 54, 0.14);
-      color: #ff9f9f;
+      background: rgba(192, 57, 43, 0.08);
+      color: #c0392b;
       align-self: center;
-      border-left: 3px solid #f44336;
+      border-left: 3px solid #c0392b;
     }
 
     .chat-input-container {
@@ -162,55 +199,58 @@
       position: sticky;
       bottom: 0;
       padding: 10px 0 2px;
-      background: linear-gradient(180deg, rgba(8,16,31,0.0), rgba(8,16,31,0.6));
-      backdrop-filter: blur(6px);
     }
 
     .chat-input {
       width: 100%;
-      padding: 16px 18px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.06);
-      color: #e8f0ff;
+      padding: 15px 18px;
+      border: 1.5px solid rgba(32,36,46,0.3);
+      border-radius: 6px;
+      background: #f4f0e7;
+      color: #20242e;
       font-size: 16px;
-      transition: all 0.25s ease;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      font-family: "Karla", sans-serif;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .chat-input:focus {
       outline: none;
-      border-color: #7c3aed;
-      background: rgba(255, 255, 255, 0.09);
-      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
+      border-color: #1e5b3f;
+      box-shadow: 0 0 0 3px rgba(30, 91, 63, 0.2);
     }
 
     .chat-input::placeholder {
-      color: rgba(232, 240, 255, 0.55);
+      color: rgba(32, 36, 46, 0.5);
     }
 
     .send-btn {
       padding: 15px 24px;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: #0b1b2f;
+      background: #1e5b3f;
+      color: #f4f0e7;
       border: none;
-      border-radius: 14px;
-      font-size: 16px;
+      border-radius: 6px;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 14px;
       font-weight: 700;
-      letter-spacing: 0.1px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
       cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 12px 30px rgba(22, 163, 74, 0.35);
+      transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .send-btn:hover {
-      transform: translateY(-1px) scale(1.01);
-      box-shadow: 0 16px 38px rgba(22, 163, 74, 0.42);
+      background: #2e7d5b;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(30, 91, 63, 0.3);
     }
 
     .send-btn:active {
       transform: translateY(0);
-      box-shadow: 0 10px 26px rgba(22, 163, 74, 0.30);
+    }
+
+    .send-btn:focus-visible {
+      outline: 3px solid var(--accent-soft, #2e7d5b);
+      outline-offset: 2px;
     }
 
     .send-btn:disabled {
@@ -225,11 +265,11 @@
       align-items: center;
       gap: 6px;
       padding: 12px 14px;
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: 12px;
+      background: #ece6d8;
+      border-radius: 6px;
       max-width: 90px;
       align-self: flex-start;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(32,36,46,0.16);
     }
 
     .typing-indicator.active {
@@ -239,7 +279,7 @@
     .typing-dot {
       width: 8px;
       height: 8px;
-      background: #7c3aed;
+      background: #1e5b3f;
       border-radius: 50%;
       animation: typingDot 1.3s infinite ease-in-out;
     }
@@ -248,101 +288,83 @@
     .typing-dot:nth-child(3) { animation-delay: 0.30s; }
 
     @keyframes typingDot {
-      0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
       30% { transform: translateY(-8px); opacity: 1; }
     }
 
     .back-link {
       display: inline-block;
       margin-bottom: 18px;
-      color: rgba(232, 240, 255, 0.75);
+      color: #1e5b3f;
       text-decoration: none;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 13px;
       font-weight: 600;
-      transition: color 0.2s ease;
+      letter-spacing: 0.04em;
+      transition: color 0.2s ease, transform 0.2s ease;
     }
 
     .back-link:hover {
-      color: #9ef7b0;
+      color: #2e7d5b;
+      transform: translateX(-4px);
     }
 
+    .chat-messages::-webkit-scrollbar { width: 8px; }
+    .chat-messages::-webkit-scrollbar-track { background: rgba(32,36,46,0.06); border-radius: 10px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: rgba(32,36,46,0.25); border-radius: 10px; }
+    .chat-messages::-webkit-scrollbar-thumb:hover { background: rgba(32,36,46,0.4); }
+
     @media (max-width: 720px) {
-      .chat-container { padding: 20px; margin: 28px 12px; }
+      .chat-container { padding: 18px; margin: 24px auto; }
       .chat-header { flex-direction: column; align-items: flex-start; }
       .chat-messages { height: 62vh; }
       .message { max-width: 100%; }
       .send-btn { width: 100%; }
       .chat-input-container { grid-template-columns: 1fr; position: static; }
     }
-    .back-link {
-      display: inline-block;
-      margin-bottom: 20px;
-      color: #667eea;
-      text-decoration: none;
-      font-weight: 500;
-      transition: all 0.3s ease;
-    }
-    
-    .back-link:hover {
-      color: #764ba2;
-      transform: translateX(-5px);
-    }
-    
-    /* Scrollbar styling */
-    .chat-messages::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    .chat-messages::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 10px;
-    }
-    
-    .chat-messages::-webkit-scrollbar-thumb {
-      background: rgba(102, 126, 234, 0.5);
-      border-radius: 10px;
-    }
-    
-    .chat-messages::-webkit-scrollbar-thumb:hover {
-      background: rgba(102, 126, 234, 0.7);
-    }
   </style>
 </head>
 <body>
   <div class="chat-container">
-    <a href="./index.html" class="back-link">← Back to Home</a>
-    
+    <a href="./index.html" class="back-link">← Back to the table</a>
+
     <div class="chat-header">
-      <h1>ORION AI Assistant</h1>
-      <p>Periodic Puzzle by Shahroz</p>
-      <p style="font-size: 0.9em; opacity: 0.6;">Ask me about chemistry & the periodic table 🧪</p>
+      <div class="chat-title">
+        <div class="chat-avatar" aria-hidden="true"></div>
+        <div>
+          <h1>ORION Tutor</h1>
+          <p class="chat-subtitle">Periodic Puzzle by Shahroz — built-in chemistry tutorials, no internet needed</p>
+        </div>
+      </div>
+      <div class="status-pill">● Local</div>
     </div>
-    
+
     <div class="chat-messages" id="chatMessages">
       <div class="message system">
-        👋 Hi! I'm ORION from Periodic Puzzle by Shahroz. Ask me about elements, game tips, or chemistry questions! 🧪⚛️
+        👋 Hi! I'm ORION, Periodix's built-in chemistry tutor — everything I say is generated right here in your browser. Ask me about how to play, element facts, or memory tips! 🧪⚛️
       </div>
     </div>
-    
+
     <div class="typing-indicator" id="typingIndicator">
       <div class="typing-dot"></div>
       <div class="typing-dot"></div>
       <div class="typing-dot"></div>
     </div>
-    
+
     <div class="chat-input-container">
-      <input 
-        type="text" 
-        class="chat-input" 
-        id="chatInput" 
-        placeholder="Type your message..."
+      <input
+        type="text"
+        class="chat-input"
+        id="chatInput"
+        placeholder="Ask me anything about chemistry…"
         autocomplete="off"
       />
       <button class="send-btn" id="sendBtn">Send</button>
     </div>
   </div>
-  
-  <!-- API Configuration -->
-  <script src="./api-config.js"></script>
+
+  <!-- Local tutorials engine -->
+  <script src="./tutorials.js"></script>
   <script src="./chat.js"></script>
 </body>
 </html>
