@@ -136,7 +136,7 @@ The goal isn't to replace textbooks or teachers — it's to provide another tool
 
 ## 🌐 Try Periodix
 
-### 👉 [Launch Periodix](https://periodix.me/)
+### 👉 [Launch Periodix](https://sherozabdulghaffar.github.io/Periodic-Table-visual-learning/)
 
 No installation is required. Open the website and start learning.
 
