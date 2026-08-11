@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="https://periodix.me/">🌐 Live Demo</a>
+  <a href="https://sherozabdulghaffar.github.io/Periodic-Table-visual-learning">🌐 Live Demo</a>
   •
   <a href="https://github.com/Sherozabdulghaffar/Periodic-Table-visual-learning/issues">🐛 Report a Bug</a>
 </p>
